@@ -1,0 +1,79 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/media/bigwhoman/lin3/uoft/Embedded_Linux/Embedded-Linux---ECE1718/E3/myExplorations/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+A9_ONCHIP_BASE	address_map_arm.h	/^#define A9_ONCHIP_BASE /;"	d
+A9_ONCHIP_SPAN	address_map_arm.h	/^#define A9_ONCHIP_SPAN /;"	d
+ADC_BASE	address_map_arm.h	/^#define ADC_BASE /;"	d
+AUDIO_BASE	address_map_arm.h	/^#define AUDIO_BASE /;"	d
+AV_CONFIG_BASE	address_map_arm.h	/^#define AV_CONFIG_BASE /;"	d
+BYTES	part1/part1.c	/^#define BYTES /;"	d	file:
+CHAR_BUF_CTRL_BASE	address_map_arm.h	/^#define CHAR_BUF_CTRL_BASE /;"	d
+DDR_BASE	address_map_arm.h	/^#define DDR_BASE /;"	d
+DDR_SPAN	address_map_arm.h	/^#define DDR_SPAN /;"	d
+DEV_NAME	part1/chardev.c	/^#define DEV_NAME /;"	d	file:
+DEV_NAME	part1/chardev_put_user.c	/^#define DEV_NAME /;"	d	file:
+FPGA_CHAR_BASE	address_map_arm.h	/^#define FPGA_CHAR_BASE /;"	d
+FPGA_CHAR_SPAN	address_map_arm.h	/^#define FPGA_CHAR_SPAN /;"	d
+FPGA_ONCHIP_BASE	address_map_arm.h	/^#define FPGA_ONCHIP_BASE /;"	d
+FPGA_ONCHIP_SPAN	address_map_arm.h	/^#define FPGA_ONCHIP_SPAN /;"	d
+HEX3_HEX0_BASE	address_map_arm.h	/^#define HEX3_HEX0_BASE /;"	d
+HEX5_HEX4_BASE	address_map_arm.h	/^#define HEX5_HEX4_BASE /;"	d
+IrDA_BASE	address_map_arm.h	/^#define IrDA_BASE /;"	d
+JP1_BASE	address_map_arm.h	/^#define JP1_BASE /;"	d
+JP2_BASE	address_map_arm.h	/^#define JP2_BASE /;"	d
+JTAG_UART_2_BASE	address_map_arm.h	/^#define JTAG_UART_2_BASE /;"	d
+JTAG_UART_BASE	address_map_arm.h	/^#define JTAG_UART_BASE /;"	d
+KEY_BASE	address_map_arm.h	/^#define KEY_BASE /;"	d
+LEDR_BASE	address_map_arm.h	/^#define LEDR_BASE /;"	d
+LW_BRIDGE_BASE	address_map_arm.h	/^#define LW_BRIDGE_BASE	/;"	d
+LW_BRIDGE_SPAN	address_map_arm.h	/^#define LW_BRIDGE_SPAN	/;"	d
+MAX_SIZE	part1/chardev.c	/^#define MAX_SIZE /;"	d	file:
+MAX_SIZE	part1/chardev_put_user.c	/^#define MAX_SIZE /;"	d	file:
+PIXEL_BUF_CTRL_BASE	address_map_arm.h	/^#define PIXEL_BUF_CTRL_BASE /;"	d
+PS2_BASE	address_map_arm.h	/^#define PS2_BASE /;"	d
+PS2_DUAL_BASE	address_map_arm.h	/^#define PS2_DUAL_BASE /;"	d
+SDRAM_BASE	address_map_arm.h	/^#define SDRAM_BASE /;"	d
+SDRAM_SPAN	address_map_arm.h	/^#define SDRAM_SPAN /;"	d
+SUCCESS	part1/chardev.c	/^#define SUCCESS /;"	d	file:
+SUCCESS	part1/chardev_put_user.c	/^#define SUCCESS /;"	d	file:
+SW_BASE	address_map_arm.h	/^#define SW_BASE /;"	d
+TIMER0_BASE	address_map_arm.h	/^#define TIMER0_BASE /;"	d
+TIMER1_BASE	address_map_arm.h	/^#define TIMER1_BASE /;"	d
+VIDEO_IN_BASE	address_map_arm.h	/^#define VIDEO_IN_BASE /;"	d
+all	part1/Makefile	/^all:$/;"	t
+catchSIGINT	part1/part1.c	/^void catchSIGINT(int signum){$/;"	f	typeref:typename:void
+catchSIGINT	part1/part1_fopen.c	/^void catchSIGINT(int signum){$/;"	f	typeref:typename:void
+chardev	part1/chardev.c	/^static struct miscdevice chardev = { $/;"	v	typeref:struct:miscdevice	file:
+chardev	part1/chardev_put_user.c	/^static struct miscdevice chardev = { $/;"	v	typeref:struct:miscdevice	file:
+chardev_BYTES	part1/part1_fopen.c	/^#define chardev_BYTES /;"	d	file:
+chardev_fops	part1/chardev.c	/^static struct file_operations chardev_fops = {$/;"	v	typeref:struct:file_operations	file:
+chardev_fops	part1/chardev_put_user.c	/^static struct file_operations chardev_fops = {$/;"	v	typeref:struct:file_operations	file:
+chardev_msg	part1/chardev.c	/^static char chardev_msg[MAX_SIZE];    \/\/ the character array that can be read or written$/;"	v	typeref:typename:char[]	file:
+chardev_msg	part1/chardev_put_user.c	/^static char chardev_msg[MAX_SIZE];    \/\/ the character array that can be read or written$/;"	v	typeref:typename:char[]	file:
+chardev_registered	part1/chardev.c	/^static int chardev_registered = 0;$/;"	v	typeref:typename:int	file:
+chardev_registered	part1/chardev_put_user.c	/^static int chardev_registered = 0;$/;"	v	typeref:typename:int	file:
+clean	part1/Makefile	/^clean:$/;"	t
+device_open	part1/chardev.c	/^static int device_open(struct inode *inode, struct file *file) {$/;"	f	typeref:typename:int	file:
+device_open	part1/chardev_put_user.c	/^static int device_open(struct inode *inode, struct file *file) {$/;"	f	typeref:typename:int	file:
+device_read	part1/chardev.c	/^static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset) {$/;"	f	typeref:typename:ssize_t	file:
+device_read	part1/chardev_put_user.c	/^static ssize_t device_read(struct file *filp, char *buffer, size_t length, loff_t *offset) {$/;"	f	typeref:typename:ssize_t	file:
+device_release	part1/chardev.c	/^static int device_release(struct inode *inode, struct file *file) {$/;"	f	typeref:typename:int	file:
+device_release	part1/chardev_put_user.c	/^static int device_release(struct inode *inode, struct file *file) {$/;"	f	typeref:typename:int	file:
+device_write	part1/chardev.c	/^static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *offset/;"	f	typeref:typename:ssize_t	file:
+device_write	part1/chardev_put_user.c	/^static ssize_t device_write(struct file *filp, const char *buffer, size_t length, loff_t *offset/;"	f	typeref:typename:ssize_t	file:
+main	part1/part1.c	/^int main(int argc, char *argv[])$/;"	f	typeref:typename:int
+main	part1/part1_fopen.c	/^int main(int argc, char *argv[])$/;"	f	typeref:typename:int
+start_chardev	part1/chardev.c	/^static int __init start_chardev(void) {$/;"	f	typeref:typename:int __init	file:
+start_chardev	part1/chardev_put_user.c	/^static int __init start_chardev(void) {$/;"	f	typeref:typename:int __init	file:
+stop	part1/part1.c	/^volatile sig_atomic_t stop;$/;"	v	typeref:typename:volatile sig_atomic_t
+stop	part1/part1_fopen.c	/^volatile sig_atomic_t stop;$/;"	v	typeref:typename:volatile sig_atomic_t
+stop_chardev	part1/chardev.c	/^static void __exit stop_chardev(void) {$/;"	f	typeref:typename:void __exit	file:
+stop_chardev	part1/chardev_put_user.c	/^static void __exit stop_chardev(void) {$/;"	f	typeref:typename:void __exit	file:
