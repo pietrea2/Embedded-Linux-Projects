@@ -1,0 +1,35 @@
+*** NOTE: your solution should display the time on BOTH the console AND the HEX display ***
+
+You may choose to write one solution that displays the same information to the HEX display 
+and the console at the same time, or you may choose to make two copies of this template,
+write two separate solutions (console and HEX) and upload two submission archives to quercus.
+
+
+To facilitate accurate marking, your submitted solution must use this template.
+To complete each part of the exercise, add your own code to the following files:
+part1: part1.c
+part2: timer.c
+part3: stopwatch.c
+
+
+Please test your solution using the provided runall.sh script:
+part1: ./runall.sh 1
+part2: ./runall.sh 2
+part3: ./runall.sh 3
+
+
+To clean all directories and remove all drivers: ./runall clean
+
+
+To submit your solution: ./runall.sh submit 
+The script generates a .tar.bz2 archive. Please upload this
+archive to quercus (only one team member needs to do this).
+
+
+The script may generate errors, for example:
+ERROR: Removing 'timer': No such file or directory
+These errors can be ignored.
+
+
+If you would like to clarify your interpretation of the exercise instructions 
+or provide any additional information to the grader, PLEASE TYPE IT HERE:
