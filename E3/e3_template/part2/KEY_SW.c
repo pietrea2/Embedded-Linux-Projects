@@ -6,16 +6,20 @@
 #include <asm/io.h>                 // for mmap
 #include "../include/address_map_arm_vm.h"
 
-//GLOBAL VARS for virtual memory addresses to hardware
+
+/*
+****************************************************
+GLOBAL VARS for virtual memory addresses to hardware
+*/
 void *LW_virtual;			 // used to map physical addresses for the light-weight bridge
 volatile int *KEY_ptr;       // virtual address for the KEY port
 volatile int *SW_ptr;        // virtual address for the SW port
-//vars for KEY and SW values
-volatile int KEY_state;
+
+volatile int KEY_state;      //vars for KEY and SW values
 volatile int SW_state;
-
-
-
+/*
+****************************************************
+*/
 
 
 //Kernel functions for device driver /dev/KEY
@@ -27,7 +31,6 @@ static ssize_t device_read_KEY (struct file *, char *, size_t, loff_t *);
 static int device_open_SW (struct inode *, struct file *);
 static int device_release_SW (struct inode *, struct file *);
 static ssize_t device_read_SW (struct file *, char *, size_t, loff_t *);
-
 
 
 static struct file_operations chardev_KEY_fops = {
@@ -44,10 +47,12 @@ static struct file_operations chardev_SW_fops = {
     .release = device_release_SW
 };
 
-#define SUCCESS 0
-#define DEV_NAME_KEY "chardev_KEY"
-#define DEV_NAME_SW "chardev_SW"
 
+#define SUCCESS 0
+#define DEV_NAME_KEY "KEY"
+#define DEV_NAME_SW "SW"
+
+//character device driver for KEY
 static struct miscdevice chardev_KEY = {
     .minor = MISC_DYNAMIC_MINOR,
     .name = DEV_NAME_KEY,
@@ -55,6 +60,7 @@ static struct miscdevice chardev_KEY = {
     .mode = 0666
 };
 
+//character device driver for SW
 static struct miscdevice chardev_SW = {
     .minor = MISC_DYNAMIC_MINOR,
     .name = DEV_NAME_SW,
@@ -70,11 +76,15 @@ static char chardev_KEY_msg[MAX_SIZE];  // the character array that can be read
 static char chardev_SW_msg[MAX_SIZE];   // the character array that can be read
 
 
+
+
+
 //Initialization function for driver functions
+//Init BOTH KEY and SW driver functions
 static int __init init_drivers(void)
 {
 
-    //KEY driver
+    //init KEY driver
     int err_KEY = misc_register (&chardev_KEY);
     if (err_KEY < 0) {
         printk (KERN_ERR "/dev/%s: misc_register() failed\n", DEV_NAME_KEY);
@@ -86,7 +96,7 @@ static int __init init_drivers(void)
     strcpy (chardev_KEY_msg, "Hello from chardev_KEY\n"); /* initialize the message */
 
 
-    //SW driver
+    //init SW driver
     int err_SW = misc_register (&chardev_SW);
     if (err_SW < 0) {
         printk (KERN_ERR "/dev/%s: misc_register() failed\n", DEV_NAME_SW);
@@ -99,17 +109,22 @@ static int __init init_drivers(void)
 
 
 
-    //initialize virtual pointers (addresses) to KEY, SW
+    /*
+    **************************************************
+    initialize virtual pointers (addresses) to KEY, SW
+    **************************************************
+    */
     LW_virtual = ioremap(LW_BRIDGE_BASE, LW_BRIDGE_SPAN);
 	KEY_ptr = LW_virtual + KEY_BASE;
     SW_ptr = LW_virtual + SW_BASE;
 
     //reset KEY Edge bits
-	*(KEY_ptr + 2) = 0xF;
+	*(KEY_ptr + 3) = 0xF;
 
     return err_KEY && err_SW;
 }
 
+//when drivers are removed from the kernel
 static void __exit stop_drivers(void)
 {
     if (chardev_KEY_registered) {
@@ -122,6 +137,7 @@ static void __exit stop_drivers(void)
         printk (KERN_INFO "/dev/%s driver de-registered\n", DEV_NAME_SW);
     }
 
+    //Unmap I/O memory from kernel address space
     iounmap(LW_virtual);
 
 }
@@ -130,7 +146,10 @@ static void __exit stop_drivers(void)
 
 
 
-
+/*
+--------------------------------------------------------------------------------------------------
+Functions for KEY device driver
+*/
 /* Called when a process opens chardev_KEY */
 static int device_open_KEY(struct inode *inode, struct file *file) {
     return SUCCESS;
@@ -143,20 +162,34 @@ static int device_release_KEY(struct inode *inode, struct file *file) {
 
 /* Called when a process reads from chardev_KEY. Provides character data from chardev_KEY_msg.
  * Returns, and sets *offset to, the number of bytes read. */
-static ssize_t device_read_KEY(struct file *filp, char *buffer) {
+static ssize_t device_read_KEY(struct file *filp, char *buffer, size_t length, loff_t *offset) {
     
-    //check which key was pressed
-    KEY_state = *(KEY_ptr + 3);
+    KEY_state = *(KEY_ptr + 3);                     //check which key was pressed
+    sprintf(chardev_KEY_msg, "%X\n", KEY_state);    //convert key state into hex char
+
+    size_t bytes;
+    bytes = strlen (chardev_KEY_msg) - (*offset);    // how many bytes not yet sent?
+    bytes = bytes > length ? length : bytes;         // too much to send all at once?
+
+    if (bytes)
+        if (copy_to_user (buffer, &chardev_KEY_msg[*offset], bytes) != 0)
+            printk (KERN_ERR "Error: copy_to_user unsuccessful");
+    *offset = bytes;                                 // keep track of number of bytes sent to the user
     
-    sprintf(chardev_KEY_msg, KEY_state);
-
-
-
-
+    *(KEY_ptr + 3) = 0xF;                            //reset KEY Edge bits
+    return bytes;
 }
+/*
+--------------------------------------------------------------------------------------------------
+*/
 
 
 
+
+/*
+--------------------------------------------------------------------------------------------------
+Functions for SW device driver
+*/
 /* Called when a process opens chardev_SW */
 static int device_open_SW(struct inode *inode, struct file *file) {
     return SUCCESS;
@@ -169,16 +202,25 @@ static int device_release_SW(struct inode *inode, struct file *file) {
 
 /* Called when a process reads from chardev_SW. Provides character data from chardev_SW_msg.
  * Returns, and sets *offset to, the number of bytes read. */
-static ssize_t device_read_SW(struct file *filp, char *buffer) {
+static ssize_t device_read_SW(struct file *filp, char *buffer, size_t length, loff_t *offset) {
     
-    //check current SW value
-    SW_state = *SW_ptr;
+    SW_state = *SW_ptr;                             //check current SW value
+    sprintf(chardev_SW_msg, "%.3X\n", SW_state);    //convert sw state into 3 digit hex char
 
-    sprintf(chardev_SW_msg, SW_state);
+    size_t bytes;
+    bytes = strlen (chardev_SW_msg) - (*offset);    // how many bytes not yet sent?
+    bytes = bytes > length ? length : bytes;        // too much to send all at once?
 
+    if (bytes)
+        if (copy_to_user (buffer, &chardev_SW_msg[*offset], bytes) != 0)
+            printk (KERN_ERR "Error: copy_to_user unsuccessful");
+    *offset = bytes;                                // keep track of number of bytes sent to the user
 
-
+    return bytes;
 }
+/*
+--------------------------------------------------------------------------------------------------
+*/
 
 
 
