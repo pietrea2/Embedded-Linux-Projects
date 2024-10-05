@@ -98,20 +98,6 @@ static ssize_t
 sw_dev_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
 {
 
-    // size_t byte;
-    // size_t max_write;
-    // byte = 0;
-    // max_write = MAX_SIZE - 1 > length ? length : MAX_SIZE - 1;
-    // while (buffer[*offset] && max_write)
-    // {
-    //     charsw_dev_msg[byte] = buffer[*offset];
-    //     byte ++;
-    //     (*offset) ++;
-    //     max_write --;
-    // }
-    // charsw_dev_msg[byte] = '\0';
-    // (*offset)= byte;
-    // return byte;
 }
 
 
@@ -133,7 +119,7 @@ key_dev_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
     size_t bytes;
     char hex_string[MAX_SIZE];
     key_value = *key_ptr;
-    sprintf(hex_string, "%X\n", switch_value);
+    sprintf(hex_string, "%X\n", key_value);
     printk(KERN_ERR "hex_string : %s\n",hex_string);
     bytes = strlen(hex_string) - (*offset);
     printk(KERN_ERR "bytes : %d\n",bytes);
@@ -151,20 +137,7 @@ static ssize_t
 key_dev_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
 {
 
-    // size_t byte;
-    // size_t max_write;
-    // byte = 0;
-    // max_write = MAX_SIZE - 1 > length ? length : MAX_SIZE - 1;
-    // while (buffer[*offset] && max_write)
-    // {
-    //     charsw_dev_msg[byte] = buffer[*offset];
-    //     byte ++;
-    //     (*offset) ++;
-    //     max_write --;
-    // }
-    // charsw_dev_msg[byte] = '\0';
-    // (*offset)= byte;
-    // return byte;
+
 }
 
 static int __init start_chardev(void)
