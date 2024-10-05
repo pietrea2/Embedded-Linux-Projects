@@ -6,7 +6,6 @@
 #include <asm/io.h>                 // for mmap
 #include "../include/address_map_arm_vm.h"
 
-
 /*
 ****************************************************
 GLOBAL VARS
@@ -190,11 +189,11 @@ static ssize_t device_write_LEDR(struct file *filp, const char *buffer, size_t l
     chardev_LEDR_msg[bytes] = '\0';    // NULL terminate
     // Note: we do NOT update *offset; we just copy the data into chardev_LEDR_msg
 
+    /*
+    Takes input as HEXADECIMAL VALUE
+    */
     sscanf (chardev_LEDR_msg, "%X", &ledr_value); //Parse command to get LEDR value to write
-    *LEDR_ptr = ledr_value;                      //Display value on LEDR
-    
-    //MUST CHECK IF INPUT IS VALID!!!
-    //TODO
+    *LEDR_ptr = ledr_value;                       //Display value on LEDR
 
     return bytes;
 }
@@ -224,10 +223,13 @@ static int device_release_HEX(struct inode *inode, struct file *file) {
  * returns the number of bytes stored. */
 static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t length, loff_t *offset)
 {
-    int hex_value;
+    int input;
     int digit_array[6];
     int digit_divide = 100000;
     int i;
+    static char str_value_input[8];
+    int scan_success;
+    int not_digit = 0;
     size_t bytes;
     bytes = length;
 
@@ -238,22 +240,45 @@ static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t le
     chardev_HEX_msg[bytes] = '\0';    // NULL terminate
     // Note: we do NOT update *offset; we just copy the data into chardev_msg
 
-    sscanf (chardev_HEX_msg, "%d", &hex_value);  //Parse command to get HEX value to write
+
+    scan_success = sscanf (chardev_HEX_msg, "%6d", &input);      //Scan for 6 digit integer
+
+    sscanf (chardev_HEX_msg, "%6s", str_value_input);            //Scan command as string to double check
+    int string_length = strlen(str_value_input);
+    //printk (KERN_ERR "Length: %d", string_length);
+    for(i = 0; i < string_length; i++){                          //DOUBLE CHECK: if there are any non-digit chars!
+        if( str_value_input[i] != '0' && str_value_input[i] != '1' && str_value_input[i] != '2' &&
+            str_value_input[i] != '3' && str_value_input[i] != '4' && str_value_input[i] != '5' &&
+            str_value_input[i] != '6' && str_value_input[i] != '7' && str_value_input[i] != '8' &&
+            str_value_input[i] != '9' ) not_digit = 1;
+    }
     
 
-    //Need to split all the digits of the number received (6 total)
-    for(i = 0; i <= 5; i++){
-        digit_array[i] = hex_value / digit_divide;
-        hex_value = hex_value % digit_divide;
-        digit_divide = digit_divide / 10;
+    /*****************************************************
+    //Bad argument if:
+    // - command is not 6 digits
+    // - command includes non-digit characters
+    (CHANGE IF NECESSARY FOR PART4) = remove strlen(chardev_HEX_msg) == 7 && !not_digit
+
+    //Only accept input as: DDDDDD --> 6 digit integer
+    ******************************************************
+    */
+    if( strlen(chardev_HEX_msg) == 7 && scan_success && !not_digit && input >= 0 && input <= 999999 ){
+        //Need to split all the digits of the number received (6 total)
+        for(i = 0; i <= 5; i++){
+            digit_array[i] = input / digit_divide;
+            input = input % digit_divide;
+            digit_divide = digit_divide / 10;
+        }
+
+        //Write 6 digits to 7-seg pointers
+        *HEX3_HEX0_ptr = (SEG[digit_array[5]]) | (SEG[digit_array[4]] << 8) | (SEG[digit_array[3]] << 16) | (SEG[digit_array[2]]) << 24;
+        *HEX5_HEX4_ptr = (SEG[digit_array[1]]) | (SEG[digit_array[0]] << 8);
+    }
+    else{
+        printk (KERN_ERR "Bad argument for /dev/HEX %s", chardev_HEX_msg);
     }
 
-    //Write 6 digits to 7-seg pointers
-	*HEX3_HEX0_ptr = (SEG[digit_array[5]]) | (SEG[digit_array[4]] << 8) | (SEG[digit_array[3]] << 16) | (SEG[digit_array[2]]) << 24;
-	*HEX5_HEX4_ptr = (SEG[digit_array[1]]) | (SEG[digit_array[0]] << 8);
-
-    //MUST CHECK IF INPUT IS VALID!!!
-    //TODO
 
     return bytes;
 }
