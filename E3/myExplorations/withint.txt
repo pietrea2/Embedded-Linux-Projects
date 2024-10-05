@@ -1,0 +1,532 @@
+
+foo.ko:     file format elf32-littlearm
+
+
+Disassembly of section .text:
+
+00000000 <dev_release>:
+    printk(KERN_INFO "connected device %s succesfully\n", DEV_NAME);
+    return SUCCESS;
+}
+
+static int dev_release(struct inode *node_ptr, struct file *filp)
+{
+   0:	e1a0c00d 	mov	ip, sp
+   4:	e92dd800 	push	{fp, ip, lr, pc}
+   8:	e24cb004 	sub	fp, ip, #4
+   c:	e92d4000 	push	{lr}
+  10:	ebfffffe 	bl	0 <__gnu_mcount_nc>
+    printk(KERN_INFO "connected released %s succesfully\n", DEV_NAME);
+  14:	e3000000 	movw	r0, #0
+  18:	e3001000 	movw	r1, #0
+  1c:	e3400000 	movt	r0, #0
+  20:	e3401000 	movt	r1, #0
+  24:	ebfffffe 	bl	0 <printk>
+    return SUCCESS;
+}
+  28:	e3a00000 	mov	r0, #0
+  2c:	e89da800 	ldm	sp, {fp, sp, pc}
+
+00000030 <dev_open>:
+        .name = "My Dev",
+        .fops = &dev_ops,
+        .mode = 0666};
+
+static int dev_open(struct inode *node_ptr, struct file *filp)
+{
+  30:	e1a0c00d 	mov	ip, sp
+  34:	e92dd800 	push	{fp, ip, lr, pc}
+  38:	e24cb004 	sub	fp, ip, #4
+  3c:	e92d4000 	push	{lr}
+  40:	ebfffffe 	bl	0 <__gnu_mcount_nc>
+    printk(KERN_INFO "connected device %s succesfully\n", DEV_NAME);
+  44:	e3000000 	movw	r0, #0
+  48:	e3001000 	movw	r1, #0
+  4c:	e3400000 	movt	r0, #0
+  50:	e3401000 	movt	r1, #0
+  54:	ebfffffe 	bl	0 <printk>
+    return SUCCESS;
+}
+  58:	e3a00000 	mov	r0, #0
+  5c:	e89da800 	ldm	sp, {fp, sp, pc}
+
+00000060 <dev_write>:
+//     return bytes;
+// }
+
+static ssize_t
+dev_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
+{
+  60:	e1a0c00d 	mov	ip, sp
+  64:	e92ddff8 	push	{r3, r4, r5, r6, r7, r8, r9, sl, fp, ip, lr, pc}
+  68:	e24cb004 	sub	fp, ip, #4
+  6c:	e92d4000 	push	{lr}
+  70:	ebfffffe 	bl	0 <__gnu_mcount_nc>
+
+    size_t byte;
+    size_t max_write;
+    byte = 0;
+    max_write = MAX_SIZE - 1 > length ? length : MAX_SIZE - 1;
+    printk(KERN_INFO "shoooooooooooooooooooooooo length : %d \n", length);
+  74:	e59f0114 	ldr	r0, [pc, #276]	; 190 <dev_write+0x130>
+//     return bytes;
+// }
+
+static ssize_t
+dev_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
+{
+  78:	e1a06003 	mov	r6, r3
+  7c:	e1a0a001 	mov	sl, r1
+
+    size_t byte;
+    size_t max_write;
+    byte = 0;
+    max_write = MAX_SIZE - 1 > length ? length : MAX_SIZE - 1;
+    printk(KERN_INFO "shoooooooooooooooooooooooo length : %d \n", length);
+  80:	e1a01002 	mov	r1, r2
+{
+
+    size_t byte;
+    size_t max_write;
+    byte = 0;
+    max_write = MAX_SIZE - 1 > length ? length : MAX_SIZE - 1;
+  84:	e35200ff 	cmp	r2, #255	; 0xff
+  88:	31a07002 	movcc	r7, r2
+  8c:	23a070ff 	movcs	r7, #255	; 0xff
+    printk(KERN_INFO "shoooooooooooooooooooooooo length : %d \n", length);
+  90:	ebfffffe 	bl	0 <printk>
+    printk(KERN_INFO "goo length : %c \n", buffer[*offset]);
+  94:	e5963000 	ldr	r3, [r6]
+  98:	e59f00f4 	ldr	r0, [pc, #244]	; 194 <dev_write+0x134>
+  9c:	e59f90f4 	ldr	r9, [pc, #244]	; 198 <dev_write+0x138>
+  a0:	e7da1003 	ldrb	r1, [sl, r3]
+  a4:	ebfffffe 	bl	0 <printk>
+    printk(KERN_INFO "koo : %d \n", *offset);
+  a8:	e1c620d0 	ldrd	r2, [r6]
+  ac:	e59f00e8 	ldr	r0, [pc, #232]	; 19c <dev_write+0x13c>
+  b0:	ebfffffe 	bl	0 <printk>
+    printk(KERN_INFO "goo length : %c \n", buffer[0]);
+  b4:	e5da1000 	ldrb	r1, [sl]
+  b8:	e59f00d4 	ldr	r0, [pc, #212]	; 194 <dev_write+0x134>
+  bc:	ebfffffe 	bl	0 <printk>
+    while (buffer[*offset] && max_write)
+  c0:	e896000c 	ldm	r6, {r2, r3}
+  c4:	e7da1002 	ldrb	r1, [sl, r2]
+  c8:	e3510000 	cmp	r1, #0
+  cc:	13570000 	cmpne	r7, #0
+  d0:	03a01000 	moveq	r1, #0
+  d4:	13a01001 	movne	r1, #1
+  d8:	0a000027 	beq	17c <dev_write+0x11c>
+  dc:	e3a08000 	mov	r8, #0
+    {
+        printk(KERN_INFO "shit offset : %d\n", *offset);
+  e0:	e59f00b8 	ldr	r0, [pc, #184]	; 1a0 <dev_write+0x140>
+        chardev_msg[byte] = buffer[*offset];
+        printk(KERN_INFO "shit2\n");
+        byte ++;
+        (*offset) ++;
+  e4:	e3a04001 	mov	r4, #1
+    printk(KERN_INFO "goo length : %c \n", buffer[*offset]);
+    printk(KERN_INFO "koo : %d \n", *offset);
+    printk(KERN_INFO "goo length : %c \n", buffer[0]);
+    while (buffer[*offset] && max_write)
+    {
+        printk(KERN_INFO "shit offset : %d\n", *offset);
+  e8:	ebfffffe 	bl	0 <printk>
+        chardev_msg[byte] = buffer[*offset];
+  ec:	e5963000 	ldr	r3, [r6]
+        printk(KERN_INFO "shit2\n");
+  f0:	e59f00ac 	ldr	r0, [pc, #172]	; 1a4 <dev_write+0x144>
+        byte ++;
+        (*offset) ++;
+        max_write --;
+  f4:	e2477001 	sub	r7, r7, #1
+    {
+        printk(KERN_INFO "shit offset : %d\n", *offset);
+        chardev_msg[byte] = buffer[*offset];
+        printk(KERN_INFO "shit2\n");
+        byte ++;
+        (*offset) ++;
+  f8:	e3a05000 	mov	r5, #0
+    printk(KERN_INFO "koo : %d \n", *offset);
+    printk(KERN_INFO "goo length : %c \n", buffer[0]);
+    while (buffer[*offset] && max_write)
+    {
+        printk(KERN_INFO "shit offset : %d\n", *offset);
+        chardev_msg[byte] = buffer[*offset];
+  fc:	e7da3003 	ldrb	r3, [sl, r3]
+ 100:	e7c93008 	strb	r3, [r9, r8]
+        printk(KERN_INFO "shit2\n");
+ 104:	ebfffffe 	bl	0 <printk>
+        byte ++;
+        (*offset) ++;
+ 108:	e1c620d0 	ldrd	r2, [r6]
+    while (buffer[*offset] && max_write)
+    {
+        printk(KERN_INFO "shit offset : %d\n", *offset);
+        chardev_msg[byte] = buffer[*offset];
+        printk(KERN_INFO "shit2\n");
+        byte ++;
+ 10c:	e2888001 	add	r8, r8, #1
+        (*offset) ++;
+        max_write --;
+        printk(KERN_INFO "byte --- %d\n", byte);
+ 110:	e59f0090 	ldr	r0, [pc, #144]	; 1a8 <dev_write+0x148>
+    {
+        printk(KERN_INFO "shit offset : %d\n", *offset);
+        chardev_msg[byte] = buffer[*offset];
+        printk(KERN_INFO "shit2\n");
+        byte ++;
+        (*offset) ++;
+ 114:	e0922004 	adds	r2, r2, r4
+        max_write --;
+        printk(KERN_INFO "byte --- %d\n", byte);
+ 118:	e1a01008 	mov	r1, r8
+    {
+        printk(KERN_INFO "shit offset : %d\n", *offset);
+        chardev_msg[byte] = buffer[*offset];
+        printk(KERN_INFO "shit2\n");
+        byte ++;
+        (*offset) ++;
+ 11c:	e0a33005 	adc	r3, r3, r5
+ 120:	e1c620f0 	strd	r2, [r6]
+        max_write --;
+        printk(KERN_INFO "byte --- %d\n", byte);
+ 124:	ebfffffe 	bl	0 <printk>
+        printk(KERN_INFO "offset --- %d \n", *offset);
+ 128:	e1c620d0 	ldrd	r2, [r6]
+ 12c:	e59f0078 	ldr	r0, [pc, #120]	; 1ac <dev_write+0x14c>
+ 130:	ebfffffe 	bl	0 <printk>
+        printk(KERN_INFO "max_write ---- %d \n", max_write);
+ 134:	e1a01007 	mov	r1, r7
+ 138:	e59f0070 	ldr	r0, [pc, #112]	; 1b0 <dev_write+0x150>
+ 13c:	ebfffffe 	bl	0 <printk>
+    max_write = MAX_SIZE - 1 > length ? length : MAX_SIZE - 1;
+    printk(KERN_INFO "shoooooooooooooooooooooooo length : %d \n", length);
+    printk(KERN_INFO "goo length : %c \n", buffer[*offset]);
+    printk(KERN_INFO "koo : %d \n", *offset);
+    printk(KERN_INFO "goo length : %c \n", buffer[0]);
+    while (buffer[*offset] && max_write)
+ 140:	e896000c 	ldm	r6, {r2, r3}
+ 144:	e7da1002 	ldrb	r1, [sl, r2]
+ 148:	e3570000 	cmp	r7, #0
+ 14c:	13510000 	cmpne	r1, #0
+ 150:	1affffe2 	bne	e0 <dev_write+0x80>
+ 154:	e1a04008 	mov	r4, r8
+ 158:	e1a07008 	mov	r7, r8
+ 15c:	e3a05000 	mov	r5, #0
+        max_write --;
+        printk(KERN_INFO "byte --- %d\n", byte);
+        printk(KERN_INFO "offset --- %d \n", *offset);
+        printk(KERN_INFO "max_write ---- %d \n", max_write);
+    }
+    printk(KERN_INFO "shit3\n");
+ 160:	e59f004c 	ldr	r0, [pc, #76]	; 1b4 <dev_write+0x154>
+ 164:	ebfffffe 	bl	0 <printk>
+    chardev_msg[byte] = '\0';
+ 168:	e3a03000 	mov	r3, #0
+    //     printk(KERN_INFO "Shietye");
+    // chardev_msg[bytes] = '\0';
+    // *offset = bytes;
+    // printk(KERN_INFO "char dev message things -------------- %s", chardev_msg);
+    // return bytes;
+}
+ 16c:	e1a00007 	mov	r0, r7
+        printk(KERN_INFO "byte --- %d\n", byte);
+        printk(KERN_INFO "offset --- %d \n", *offset);
+        printk(KERN_INFO "max_write ---- %d \n", max_write);
+    }
+    printk(KERN_INFO "shit3\n");
+    chardev_msg[byte] = '\0';
+ 170:	e7c93008 	strb	r3, [r9, r8]
+    (*offset)= byte;
+ 174:	e1c640f0 	strd	r4, [r6]
+    //     printk(KERN_INFO "Shietye");
+    // chardev_msg[bytes] = '\0';
+    // *offset = bytes;
+    // printk(KERN_INFO "char dev message things -------------- %s", chardev_msg);
+    // return bytes;
+}
+ 178:	e89daff8 	ldm	sp, {r3, r4, r5, r6, r7, r8, r9, sl, fp, sp, pc}
+    max_write = MAX_SIZE - 1 > length ? length : MAX_SIZE - 1;
+    printk(KERN_INFO "shoooooooooooooooooooooooo length : %d \n", length);
+    printk(KERN_INFO "goo length : %c \n", buffer[*offset]);
+    printk(KERN_INFO "koo : %d \n", *offset);
+    printk(KERN_INFO "goo length : %c \n", buffer[0]);
+    while (buffer[*offset] && max_write)
+ 17c:	e1a07001 	mov	r7, r1
+ 180:	e3a04000 	mov	r4, #0
+ 184:	e3a05000 	mov	r5, #0
+dev_write(struct file *filp, const char *buffer, size_t length, loff_t *offset)
+{
+
+    size_t byte;
+    size_t max_write;
+    byte = 0;
+ 188:	e1a08001 	mov	r8, r1
+ 18c:	eafffff3 	b	160 <dev_write+0x100>
+ 190:	00000058 	.word	0x00000058
+ 194:	00000084 	.word	0x00000084
+ 198:	00000000 	.word	0x00000000
+ 19c:	00000098 	.word	0x00000098
+ 1a0:	000000a8 	.word	0x000000a8
+ 1a4:	000000bc 	.word	0x000000bc
+ 1a8:	000000c8 	.word	0x000000c8
+ 1ac:	000000d8 	.word	0x000000d8
+ 1b0:	000000ec 	.word	0x000000ec
+ 1b4:	00000104 	.word	0x00000104
+
+000001b8 <dev_read>:
+    return SUCCESS;
+}
+
+static ssize_t
+dev_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
+{
+ 1b8:	e1a0c00d 	mov	ip, sp
+ 1bc:	e92dddf0 	push	{r4, r5, r6, r7, r8, sl, fp, ip, lr, pc}
+ 1c0:	e24cb004 	sub	fp, ip, #4
+ 1c4:	e92d4000 	push	{lr}
+ 1c8:	ebfffffe 	bl	0 <__gnu_mcount_nc>
+    // return bytes;
+
+    size_t bytes_read = 0;
+    char *msg_Ptr = &(chardev_msg[*offset]);
+
+    switch_value = *sw_ptr;
+ 1cc:	e59f40b4 	ldr	r4, [pc, #180]	; 288 <dev_read+0xd0>
+    // *offset = bytes;
+    // // printk(KERN_ERR "shofset : %s %p\n", *offset, offset);
+    // return bytes;
+
+    size_t bytes_read = 0;
+    char *msg_Ptr = &(chardev_msg[*offset]);
+ 1d0:	e5938000 	ldr	r8, [r3]
+    return SUCCESS;
+}
+
+static ssize_t
+dev_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
+{
+ 1d4:	e1a0a003 	mov	sl, r3
+ 1d8:	e1a06001 	mov	r6, r1
+
+    size_t bytes_read = 0;
+    char *msg_Ptr = &(chardev_msg[*offset]);
+
+    switch_value = *sw_ptr;
+    printk(KERN_INFO "chaoaoao --- %d\n", switch_value);
+ 1dc:	e59f00a8 	ldr	r0, [pc, #168]	; 28c <dev_read+0xd4>
+    // return bytes;
+
+    size_t bytes_read = 0;
+    char *msg_Ptr = &(chardev_msg[*offset]);
+
+    switch_value = *sw_ptr;
+ 1e0:	e5943100 	ldr	r3, [r4, #256]	; 0x100
+    return SUCCESS;
+}
+
+static ssize_t
+dev_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
+{
+ 1e4:	e1a07002 	mov	r7, r2
+    // return bytes;
+
+    size_t bytes_read = 0;
+    char *msg_Ptr = &(chardev_msg[*offset]);
+
+    switch_value = *sw_ptr;
+ 1e8:	e5933000 	ldr	r3, [r3]
+ 1ec:	e5843104 	str	r3, [r4, #260]	; 0x104
+    printk(KERN_INFO "chaoaoao --- %d\n", switch_value);
+ 1f0:	e5941104 	ldr	r1, [r4, #260]	; 0x104
+ 1f4:	ebfffffe 	bl	0 <printk>
+    // Write to user buffer
+    while (length && *msg_Ptr)
+ 1f8:	e3570000 	cmp	r7, #0
+ 1fc:	01a00007 	moveq	r0, r7
+ 200:	03a04000 	moveq	r4, #0
+ 204:	03a05000 	moveq	r5, #0
+ 208:	0a000018 	beq	270 <dev_read+0xb8>
+ 20c:	e7d42008 	ldrb	r2, [r4, r8]
+ 210:	e3520000 	cmp	r2, #0
+ 214:	03a04000 	moveq	r4, #0
+ 218:	03a05000 	moveq	r5, #0
+ 21c:	01a00002 	moveq	r0, r2
+ 220:	0a000012 	beq	270 <dev_read+0xb8>
+ 224:	e1a0300d 	mov	r3, sp
+ 228:	e3c35d7f 	bic	r5, r3, #8128	; 0x1fc0
+    // *offset = bytes;
+    // // printk(KERN_ERR "shofset : %s %p\n", *offset, offset);
+    // return bytes;
+
+    size_t bytes_read = 0;
+    char *msg_Ptr = &(chardev_msg[*offset]);
+ 22c:	e0844008 	add	r4, r4, r8
+ 230:	e3c5503f 	bic	r5, r5, #63	; 0x3f
+    // // printk(KERN_ERR "gogogoogog : %s %p\n", *offset, offset);
+    // *offset = bytes;
+    // // printk(KERN_ERR "shofset : %s %p\n", *offset, offset);
+    // return bytes;
+
+    size_t bytes_read = 0;
+ 234:	e3a03000 	mov	r3, #0
+ 238:	ea000002 	b	248 <dev_read+0x90>
+    char *msg_Ptr = &(chardev_msg[*offset]);
+
+    switch_value = *sw_ptr;
+    printk(KERN_INFO "chaoaoao --- %d\n", switch_value);
+    // Write to user buffer
+    while (length && *msg_Ptr)
+ 23c:	e5f42001 	ldrb	r2, [r4, #1]!
+ 240:	e3520000 	cmp	r2, #0
+ 244:	0a00000b 	beq	278 <dev_read+0xc0>
+    {
+        put_user(*(msg_Ptr++), buffer++);
+ 248:	e5951008 	ldr	r1, [r5, #8]
+    printk(KERN_INFO "connected released %s succesfully\n", DEV_NAME);
+    return SUCCESS;
+}
+
+static ssize_t
+dev_read(struct file *filp, char *buffer, size_t length, loff_t *offset)
+ 24c:	e0860003 	add	r0, r6, r3
+    switch_value = *sw_ptr;
+    printk(KERN_INFO "chaoaoao --- %d\n", switch_value);
+    // Write to user buffer
+    while (length && *msg_Ptr)
+    {
+        put_user(*(msg_Ptr++), buffer++);
+ 250:	e2411001 	sub	r1, r1, #1
+ 254:	ebfffffe 	bl	0 <__put_user_1>
+        length--;
+        bytes_read++;
+ 258:	e2833001 	add	r3, r3, #1
+    char *msg_Ptr = &(chardev_msg[*offset]);
+
+    switch_value = *sw_ptr;
+    printk(KERN_INFO "chaoaoao --- %d\n", switch_value);
+    // Write to user buffer
+    while (length && *msg_Ptr)
+ 25c:	e1570003 	cmp	r7, r3
+ 260:	1afffff5 	bne	23c <dev_read+0x84>
+ 264:	e1a04007 	mov	r4, r7
+ 268:	e1a00007 	mov	r0, r7
+ 26c:	e3a05000 	mov	r5, #0
+    {
+        put_user(*(msg_Ptr++), buffer++);
+        length--;
+        bytes_read++;
+    }
+    (*offset) = bytes_read;
+ 270:	e1ca40f0 	strd	r4, [sl]
+    return bytes_read;
+}
+ 274:	e89dadf0 	ldm	sp, {r4, r5, r6, r7, r8, sl, fp, sp, pc}
+    char *msg_Ptr = &(chardev_msg[*offset]);
+
+    switch_value = *sw_ptr;
+    printk(KERN_INFO "chaoaoao --- %d\n", switch_value);
+    // Write to user buffer
+    while (length && *msg_Ptr)
+ 278:	e1a04003 	mov	r4, r3
+ 27c:	e1a00003 	mov	r0, r3
+ 280:	e3a05000 	mov	r5, #0
+ 284:	eafffff9 	b	270 <dev_read+0xb8>
+ 288:	00000000 	.word	0x00000000
+ 28c:	00000110 	.word	0x00000110
+
+Disassembly of section .init.text:
+
+00000000 <init_module>:
+    // printk(KERN_INFO "char dev message things -------------- %s", chardev_msg);
+    // return bytes;
+}
+
+static int __init start_chardev(void)
+{
+   0:	e1a0c00d 	.word	0xe1a0c00d
+   4:	e92dd800 	push	{fp, ip, lr, pc}
+   8:	e24cb004 	sub	fp, ip, #4
+    printk(KERN_INFO "Starting the thing \n");
+   c:	e59f0050 	ldr	r0, [pc, #80]	; 64 <init_module+0x64>
+  10:	ebfffffe 	bl	0 <printk>
+    int error = misc_register(&dev_dev);
+  14:	e59f004c 	ldr	r0, [pc, #76]	; 68 <init_module+0x68>
+  18:	ebfffffe 	bl	0 <misc_register>
+    if (error < 0)
+  1c:	e3500000 	cmp	r0, #0
+  20:	ba00000d 	blt	5c <init_module+0x5c>
+        return 1;
+
+    virtual_base = ioremap(LW_BRIDGE_BASE, LW_BRIDGE_SPAN);
+  24:	e3a01a05 	mov	r1, #20480	; 0x5000
+  28:	e3a02000 	mov	r2, #0
+  2c:	e3a00000 	mov	r0, #0
+  30:	e34f0f20 	movt	r0, #65312	; 0xff20
+  34:	ebfffffe 	bl	0 <__arm_ioremap>
+  38:	e59f302c 	ldr	r3, [pc, #44]	; 6c <init_module+0x6c>
+  3c:	e1a02000 	mov	r2, r0
+    key_ptr = virtual_base + KEY_BASE;
+  40:	e280cd05 	add	ip, r0, #320	; 0x140
+    sw_ptr = virtual_base + SW_BASE;
+  44:	e2801c01 	add	r1, r0, #256	; 0x100
+    printk(KERN_INFO "Starting the thing \n");
+    int error = misc_register(&dev_dev);
+    if (error < 0)
+        return 1;
+
+    virtual_base = ioremap(LW_BRIDGE_BASE, LW_BRIDGE_SPAN);
+  48:	e5832108 	str	r2, [r3, #264]	; 0x108
+    key_ptr = virtual_base + KEY_BASE;
+    sw_ptr = virtual_base + SW_BASE;
+    return 0;
+  4c:	e3a00000 	mov	r0, #0
+    int error = misc_register(&dev_dev);
+    if (error < 0)
+        return 1;
+
+    virtual_base = ioremap(LW_BRIDGE_BASE, LW_BRIDGE_SPAN);
+    key_ptr = virtual_base + KEY_BASE;
+  50:	e583c10c 	str	ip, [r3, #268]	; 0x10c
+    sw_ptr = virtual_base + SW_BASE;
+  54:	e5831100 	str	r1, [r3, #256]	; 0x100
+    return 0;
+  58:	e89da800 	ldm	sp, {fp, sp, pc}
+static int __init start_chardev(void)
+{
+    printk(KERN_INFO "Starting the thing \n");
+    int error = misc_register(&dev_dev);
+    if (error < 0)
+        return 1;
+  5c:	e3a00001 	mov	r0, #1
+
+    virtual_base = ioremap(LW_BRIDGE_BASE, LW_BRIDGE_SPAN);
+    key_ptr = virtual_base + KEY_BASE;
+    sw_ptr = virtual_base + SW_BASE;
+    return 0;
+}
+  60:	e89da800 	ldm	sp, {fp, sp, pc}
+  64:	00000124 	.word	0x00000124
+	...
+
+Disassembly of section .exit.text:
+
+00000000 <cleanup_module>:
+
+static int __exit cleanup_device(void)
+{
+   0:	e1a0c00d 	.word	0xe1a0c00d
+   4:	e92dd800 	push	{fp, ip, lr, pc}
+   8:	e24cb004 	sub	fp, ip, #4
+    misc_deregister(&dev_dev);
+   c:	e59f0010 	ldr	r0, [pc, #16]	; 24 <cleanup_module+0x24>
+  10:	ebfffffe 	bl	0 <misc_deregister>
+    iounmap(virtual_base);
+  14:	e59f300c 	ldr	r3, [pc, #12]	; 28 <cleanup_module+0x28>
+  18:	e5930108 	ldr	r0, [r3, #264]	; 0x108
+  1c:	ebfffffe 	bl	0 <__arm_iounmap>
+}
+  20:	e89da800 	ldm	sp, {fp, sp, pc}
+	...
