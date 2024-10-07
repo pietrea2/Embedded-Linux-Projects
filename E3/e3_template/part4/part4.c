@@ -1,6 +1,3 @@
-
-
-/**  your part 4 user code here  **/
 #include <stdio.h>
 #include <signal.h>
 #include <string.h>
@@ -8,7 +5,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-#define chardev_BYTES 256 // max number of characters to read from /dev/chardev
+#define chardev_BYTES 256 // max number of characters to read from /dev/SW or KEY
 
 volatile sig_atomic_t stop;
 void catchSIGINT(int signum)
@@ -16,22 +13,20 @@ void catchSIGINT(int signum)
     stop = 1;
 }
 
-/* This code uses the character device driver /dev/chardev. The code reads the default
- * message from the driver and then prints it. After this the code changes the message in
- * a loop by writing to the driver, and prints each new message. The program exits if it
- * receives a kill signal (for example, ^C typed on stdin). */
 int main(int argc, char *argv[])
 {
     FILE *ledr_fp;                  // LEDR file pointer
-    FILE *hex_fp;                   // Hex displays file pointer
+    FILE *hex_fp;                   // HEX displays file pointer
     FILE *sw_fp;                    // Switch file pointer
     FILE *key_fp;                   // Keys file pointer
-    char sw_buffer[chardev_BYTES];  // buffer for chardev character data
-    char key_buffer[chardev_BYTES]; // buffer for chardev character data
-    char sum_ptr[chardev_BYTES]; // buffer for chardev character data
-    char new_msg[128];              // space for the new message that we generate
+
+    char sw_buffer[chardev_BYTES];  // buffer for SW character data
+    char key_buffer[chardev_BYTES]; // buffer for KEY character data
+    char sum_ptr[chardev_BYTES];    // buffer for HEX character data
+
     int sum;
     int sw_value;
+    int key_value;
 
     // catch SIGINT from ctrl+c, instead of having it abruptly close this program
     signal(SIGINT, catchSIGINT);
@@ -56,35 +51,47 @@ int main(int argc, char *argv[])
         printf("Error opening /dev/chardev: %s\n", strerror(errno));
         return -1;
     }
+   
 
     sum = 0;
-    while (!stop)
-    {
-        int key_value;
-        while (fgets(key_buffer, chardev_BYTES, key_fp))
-            ; // read the driver until EOF
-        sscanf(key_buffer, "%d", &key_value);
-        // printf("keys === %d\n", key_value);
-        // sscanf(sum,"%s",sum_ptr);
-        sprintf(sum_ptr, "%d\n", sum);
-        fputs(sum_ptr, hex_fp);
-        fflush(hex_fp);
-        if (key_value > 0)
-        {
-            while (fgets(sw_buffer, chardev_BYTES, sw_fp))
-                ; // read the driver until EOF
+    while (!stop) {
 
-            printf("%s", sw_buffer);
-            sscanf(sw_buffer, "%d", &sw_value);
-            sum += sw_value;
-            fputs(sw_buffer, ledr_fp);
+        while ( fgets(key_buffer, chardev_BYTES, key_fp) );         // read the KEY driver until EOF
+        sscanf(key_buffer, "%x", &key_value);                       // format output buffer from KEY and store as hex value in key_value
+
+        sprintf(sum_ptr, "%06d\n", sum);                            // store sum in sum_ptr as a 6 digit int padded with 0s and \n
+        fputs(sum_ptr, hex_fp);                                     // write sum buffer to HEX driver (to display accumulator)
+        fflush(hex_fp);
+
+        //if key is pressed
+        if (key_value > 0) {
+
+            while ( fgets(sw_buffer, chardev_BYTES, sw_fp) );  // read the SW driver until EOF
+            sw_buffer[ strcspn(sw_buffer, "\n") ] = 0;         // remove \n from string
+            sscanf(sw_buffer, "%3x", &sw_value);               //store sw_buffer in sw_value as 3 digit formatted hex
+
+            printf("Switch value: %s (hex) --> %d (decimal)\n", sw_buffer, sw_value);
+
+            //reset accumulator if switches = 0 and key pressed
+            if( sw_value == 0 ){
+                sum = 0;
+            }
+            else{
+                if( (sum + sw_value) <= 999999 ) sum += sw_value;
+            }
+
+            fputs(sw_buffer, ledr_fp);                          // write sw_buffer to LEDR driver to display SW value
             fflush(ledr_fp);
         }
+
         sleep(1);
     }
+
+    //close all char driver files
     fclose(sw_fp);
     fclose(hex_fp);
     fclose(ledr_fp);
     fclose(key_fp);
+
     return 0;
 }

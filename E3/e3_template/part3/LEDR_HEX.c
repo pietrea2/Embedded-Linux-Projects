@@ -243,6 +243,7 @@ static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t le
 
     scan_success = sscanf (chardev_HEX_msg, "%6d", &input);      //Scan for 6 digit integer
 
+    
     sscanf (chardev_HEX_msg, "%6s", str_value_input);            //Scan command as string to double check
     int string_length = strlen(str_value_input);
     //printk (KERN_ERR "Length: %d", string_length);
