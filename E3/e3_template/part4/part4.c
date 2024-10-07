@@ -75,7 +75,9 @@ int main(int argc, char *argv[])
                 ; // read the driver until EOF
 
             printf("%s", sw_buffer);
-            sscanf(sw_buffer, "%d", &sw_value);
+            sscanf(sw_buffer, "%x", &sw_value);
+	    if (sw_value == 0)
+		sum = 0;
             sum += sw_value;
             fputs(sw_buffer, ledr_fp);
             fflush(ledr_fp);
