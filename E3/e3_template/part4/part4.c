@@ -54,14 +54,14 @@ int main(int argc, char *argv[])
    
 
     sum = 0;
+    sprintf(sum_ptr, "%06d\n", sum);                            // store sum in sum_ptr as a 6 digit int padded with 0s and \n
+    fputs(sum_ptr, hex_fp);                                     // write sum buffer to HEX driver (to display accumulator)
+    fflush(hex_fp);
+
     while (!stop) {
 
         while ( fgets(key_buffer, chardev_BYTES, key_fp) );         // read the KEY driver until EOF
         sscanf(key_buffer, "%x", &key_value);                       // format output buffer from KEY and store as hex value in key_value
-
-        sprintf(sum_ptr, "%06d\n", sum);                            // store sum in sum_ptr as a 6 digit int padded with 0s and \n
-        fputs(sum_ptr, hex_fp);                                     // write sum buffer to HEX driver (to display accumulator)
-        fflush(hex_fp);
 
         //if key is pressed
         if (key_value > 0) {
@@ -80,8 +80,12 @@ int main(int argc, char *argv[])
                 if( (sum + sw_value) <= 999999 ) sum += sw_value;
             }
 
-            fputs(sw_buffer, ledr_fp);                          // write sw_buffer to LEDR driver to display SW value
+            fputs(sw_buffer, ledr_fp);                                  // write sw_buffer to LEDR driver to display SW value
             fflush(ledr_fp);
+
+            sprintf(sum_ptr, "%06d\n", sum);                            // store sum in sum_ptr as a 6 digit int padded with 0s and \n
+            fputs(sum_ptr, hex_fp);                                     // write sum buffer to HEX driver (to display accumulator)
+            fflush(hex_fp);
         }
 
         sleep(1);

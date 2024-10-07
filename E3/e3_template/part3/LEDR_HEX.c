@@ -259,7 +259,6 @@ static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t le
     //Bad argument if:
     // - command is not 6 digits
     // - command includes non-digit characters
-    (CHANGE IF NECESSARY FOR PART4) = remove strlen(chardev_HEX_msg) == 7 && !not_digit
 
     //Only accept input as: DDDDDD --> 6 digit integer
     ******************************************************
@@ -267,7 +266,7 @@ static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t le
     if( strlen(chardev_HEX_msg) == 7 && scan_success && !not_digit && input >= 0 && input <= 999999 ){
         //Need to split all the digits of the number received (6 total)
         for(i = 0; i <= 5; i++){
-            digit_array[i] = input / digit_divide;
+            digit_array[i] = input / digit_divide; //store 6 digits to display in int array
             input = input % digit_divide;
             digit_divide = digit_divide / 10;
         }
