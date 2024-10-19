@@ -33,32 +33,29 @@ volatile int SW_state;
 ****************************************************
 */
 
-
 // Kernel functions for device driver /dev/KEY
-static int device_open_KEY(struct inode *, struct file *);
-static int device_release_KEY(struct inode *, struct file *);
-static ssize_t device_read_KEY(struct file *, char *, size_t, loff_t *);
+static int device_open_STOPWATCH(struct inode *, struct file *);
+static int device_release_STOPWATCH(struct inode *, struct file *);
+static ssize_t device_read_STOPWATCH(struct file *, char *, size_t, loff_t *);
 
-static struct file_operations chardev_KEY_fops = {
+static struct file_operations chardev_STOPWATCH_fops = {
     .owner = THIS_MODULE,
-    .read = device_read_KEY,
-    .open = device_open_KEY,
-    .release = device_release_KEY};
+    .read = device_read_STOPWATCH,
+    .open = device_open_STOPWATCH,
+    .release = device_release_STOPWATCH};
 
-
-
-#define DEV_NAME_KEY "stopwatch"
+#define DEV_NAME_STOPWATCH "stopwatch"
 #define MAX_SIZE 256
 #define SUCCESS 0
 
 // character device driver for KEY
-static struct miscdevice chardev_KEY = {
+static struct miscdevice chardev_STOPWATCH = {
     .minor = MISC_DYNAMIC_MINOR,
-    .name = DEV_NAME_KEY,
-    .fops = &chardev_KEY_fops,
+    .name = DEV_NAME_STOPWATCH,
+    .fops = &chardev_STOPWATCH_fops,
     .mode = 0666};
 
-static char chardev_KEY_msg[MAX_SIZE]; // the character array that can be read
+static char timer_stopwatch[MAX_SIZE]; // the character array that can be read
 
 // Bit patterns to display digits 0 - 9 on HEXs
 static const char SEG[] = {
@@ -224,14 +221,14 @@ static int __init custom_init(void)
 {
 
     // init KEY driver
-    int err_KEY = misc_register(&chardev_KEY);
+    int err_KEY = misc_register(&chardev_STOPWATCH);
     if (err_KEY < 0)
     {
-        printk(KERN_ERR "/dev/%s: misc_register() failed\n", DEV_NAME_KEY);
+        printk(KERN_ERR "/dev/%s: misc_register() failed\n", DEV_NAME_STOPWATCH);
     }
     else
     {
-        printk(KERN_INFO "/dev/%s driver registered\n", DEV_NAME_KEY);
+        printk(KERN_INFO "/dev/%s driver registered\n", DEV_NAME_STOPWATCH);
     }
 
     /* initialize the message */
@@ -292,8 +289,8 @@ static int __exit custom_exit(void)
     *(timer_ptr + 0) = 0;
     *(timer_ptr + 3) = 0;
     *(timer_ptr + 1) = 0;
-    misc_deregister(&chardev_KEY);
-    printk(KERN_INFO "/dev/%s driver de-registered\n", DEV_NAME_KEY);
+    misc_deregister(&chardev_STOPWATCH);
+    printk(KERN_INFO "/dev/%s driver de-registered\n", DEV_NAME_STOPWATCH);
     iounmap(virtual_base);
     free_irq(TIMER0_IRQ, (void *)timer_handler);
     free_irq(KEY_IRQ, (void *)key_handler);
@@ -301,31 +298,33 @@ static int __exit custom_exit(void)
 
 /*
 --------------------------------------------------------------------------------------------------
-Functions for KEY device driver
+Functions for Stopwatch device driver
 */
-/* Called when a process opens chardev_KEY */
-static int device_open_KEY(struct inode *inode, struct file *file)
+/* Called when a process opens chardev_STOPWATCH */
+static int device_open_STOPWATCH(struct inode *inode, struct file *file)
 {
     return SUCCESS;
 }
 
-/* Called when a process closes chardev_KEY */
-static int device_release_KEY(struct inode *inode, struct file *file)
+/* Called when a process closes chardev_STOPWATCH */
+static int device_release_STOPWATCH(struct inode *inode, struct file *file)
 {
     return 0;
 }
 
-/* Called when a process reads from chardev_KEY. Provides character data from chardev_KEY_msg.
+/* Called when a process reads the time. Provides character data from timer_stopwatch.
  * Returns, and sets *offset to, the number of bytes read. */
-static ssize_t device_read_KEY(struct file *filp, char *buffer, size_t length, loff_t *offset)
+static ssize_t device_read_STOPWATCH(struct file *filp, char *buffer, size_t length, loff_t *offset)
 {
-    sprintf(chardev_KEY_msg, "hello\n");
+    //  *seven_seg_ptr = (SEG[9 - miliseconds]) | (SEG[9 - miliseconds_2] << 8) | (SEG[9 - seconds] << 16) | (SEG[5 - seconds_2]) << 24;
+    // *seven_seg_ptr_2 = (SEG[9 - minutes]) | (SEG[5 - minutes_2] << 8);
+    sprintf(timer_stopwatch, "%d%d:%d%d:%d%d\n", 5 - minutes_2, 9 - minutes, 5 - seconds_2, 9 - seconds, 9 - miliseconds_2, 9 - miliseconds);
     size_t bytes;
-    bytes = strlen(chardev_KEY_msg) - (*offset); // how many bytes not yet sent?
+    bytes = strlen(timer_stopwatch) - (*offset); // how many bytes not yet sent?
     bytes = bytes > length ? length : bytes;     // too much to send all at once?
 
     if (bytes)
-        if (copy_to_user(buffer, &chardev_KEY_msg[*offset], bytes) != 0)
+        if (copy_to_user(buffer, &timer_stopwatch[*offset], bytes) != 0)
             printk(KERN_ERR "Error: copy_to_user unsuccessful");
     *offset = bytes; // keep track of number of bytes sent to the user
 
