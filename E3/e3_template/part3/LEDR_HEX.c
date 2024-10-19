@@ -179,6 +179,9 @@ static int device_release_LEDR(struct inode *inode, struct file *file) {
 static ssize_t device_write_LEDR(struct file *filp, const char *buffer, size_t length, loff_t *offset)
 {
     int ledr_value;
+    static char str_value_input[7];
+    int not_hex = 0;
+    int i;
     size_t bytes;
     bytes = length;
 
@@ -192,8 +195,27 @@ static ssize_t device_write_LEDR(struct file *filp, const char *buffer, size_t l
     /*
     Takes input as HEXADECIMAL VALUE
     */
-    sscanf (chardev_LEDR_msg, "%X", &ledr_value); //Parse command to get LEDR value to write
-    *LEDR_ptr = ledr_value;                       //Display value on LEDR
+    sscanf (chardev_LEDR_msg, "%X", &ledr_value);                 //Parse command to get LEDR value to write
+
+    sscanf (chardev_LEDR_msg, "%3s", str_value_input);            //Scan command as string to double check
+    int string_length = strlen(str_value_input);
+
+    for(i = 0; i < string_length; i++){                          //DOUBLE CHECK: if there are any non-hex chars!
+        if( str_value_input[i] != '0' && str_value_input[i] != '1' && str_value_input[i] != '2' &&
+            str_value_input[i] != '3' && str_value_input[i] != '4' && str_value_input[i] != '5' &&
+            str_value_input[i] != '6' && str_value_input[i] != '7' && str_value_input[i] != '8' &&
+            str_value_input[i] != '9' && str_value_input[i] != 'A' && str_value_input[i] != 'B' &&
+            str_value_input[i] != 'C' && str_value_input[i] != 'D' && str_value_input[i] != 'E' &&
+            str_value_input[i] != 'F' ) not_hex = 1;
+    }
+
+    //DOUBLE CHECK FOR VALID INPUT: EXPECTS 3 DIGIT HEX INPUT
+    if( strlen(chardev_LEDR_msg) == 4 && !not_hex && ledr_value >= 0x000 && ledr_value <= 0x3FF ){
+        *LEDR_ptr = ledr_value;                       //Display value on LEDR
+    }
+    else{
+        printk (KERN_ERR "Bad argument for /dev/LEDR %s", chardev_LEDR_msg);
+    }
 
     return bytes;
 }
@@ -243,9 +265,10 @@ static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t le
 
     scan_success = sscanf (chardev_HEX_msg, "%6d", &input);      //Scan for 6 digit integer
 
+    
     sscanf (chardev_HEX_msg, "%6s", str_value_input);            //Scan command as string to double check
     int string_length = strlen(str_value_input);
-    //printk (KERN_ERR "Length: %d", string_length);
+    
     for(i = 0; i < string_length; i++){                          //DOUBLE CHECK: if there are any non-digit chars!
         if( str_value_input[i] != '0' && str_value_input[i] != '1' && str_value_input[i] != '2' &&
             str_value_input[i] != '3' && str_value_input[i] != '4' && str_value_input[i] != '5' &&
@@ -258,7 +281,6 @@ static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t le
     //Bad argument if:
     // - command is not 6 digits
     // - command includes non-digit characters
-    (CHANGE IF NECESSARY FOR PART4) = remove strlen(chardev_HEX_msg) == 7 && !not_digit
 
     //Only accept input as: DDDDDD --> 6 digit integer
     ******************************************************
@@ -266,7 +288,7 @@ static ssize_t device_write_HEX(struct file *filp, const char *buffer, size_t le
     if( strlen(chardev_HEX_msg) == 7 && scan_success && !not_digit && input >= 0 && input <= 999999 ){
         //Need to split all the digits of the number received (6 total)
         for(i = 0; i <= 5; i++){
-            digit_array[i] = input / digit_divide;
+            digit_array[i] = input / digit_divide; //store 6 digits to display in int array
             input = input % digit_divide;
             digit_divide = digit_divide / 10;
         }
