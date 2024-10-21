@@ -116,7 +116,14 @@ irq_handler_t timer_handler(int irq, void *dev_id, struct pt_regs *regs)
                         minutes_2 += 1;
 
                         if (minutes_2 == 6)
-                            minutes_2 = 0;
+                        {
+                            minutes_2 = 5;
+                            minutes = 9;
+                            seconds_2 = 5;
+                            seconds = 9;
+                            miliseconds_2 = 9;
+                            miliseconds = 9;
+                        }
                     }
                 }
             }
