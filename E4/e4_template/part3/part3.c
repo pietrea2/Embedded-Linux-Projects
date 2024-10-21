@@ -178,7 +178,8 @@ int main(int argc, char *argv[])
 
     }
 
-
+    // turn off LEDRs 
+    LEDR_set(0);
 
     //close all char driver files
     LEDR_close();
