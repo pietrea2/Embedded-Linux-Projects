@@ -4,7 +4,7 @@
 #include <errno.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <intelfpgaup/KEY.h>
+#include <intelfpgaup/KEY.h>    //include these header files for device drivers
 #include <intelfpgaup/SW.h>
 #include <intelfpgaup/LEDR.h>
 
@@ -18,20 +18,13 @@ void catchSIGINT(int signum)
 
 int main(int argc, char *argv[])
 {
-    FILE *stopwatch_fp;                   // Stopwatch file pointer
+    FILE *stopwatch_fp;        // Stopwatch file pointer
 
     int stopwatch_run = 1;
-    char stopwatch_command[chardev_BYTES];
-    char stopwatch_buffer[chardev_BYTES];
-    volatile int miliseconds;
-    volatile int miliseconds_2;
-    volatile int seconds;
-    volatile int seconds_2;
-    volatile int minutes;
-    volatile int minutes_2;
-    volatile int ones_column;
-    volatile int tens_column;
-    int current_minutes;
+    char stopwatch_command[chardev_BYTES]; // for reading command sent to driver
+    char stopwatch_buffer[chardev_BYTES];  // for writing command to driver 
+    
+    int current_minutes;                   // vars used to extract minutes, seconds, milisecs from read funciton
     int current_seconds;
     int current_miliseconds;
 
@@ -75,12 +68,12 @@ int main(int argc, char *argv[])
 
             // toggle
             if(stopwatch_run){
-                fputs("stop", stopwatch_fp);               // write sw_buffer to LEDR driver to display SW value
+                fputs("stop", stopwatch_fp);               
                 fflush(stopwatch_fp);
                 stopwatch_run = 0;
             }
             else{
-                fputs("run", stopwatch_fp);               // write sw_buffer to LEDR driver to display SW value
+                fputs("run", stopwatch_fp);             
                 fflush(stopwatch_fp);
                 stopwatch_run = 1;
             }
@@ -99,7 +92,6 @@ int main(int argc, char *argv[])
                                                  &current_seconds, 
                                                  &current_miliseconds);     // store cur time in seperate vars
 
-
             if( SW_data <= 99 ){
 
                 current_miliseconds = SW_data;
@@ -112,7 +104,6 @@ int main(int argc, char *argv[])
                 fflush(stopwatch_fp);
 
                 LEDR_set(SW_data);
-
             }
 
 
@@ -123,12 +114,11 @@ int main(int argc, char *argv[])
             // read SW value
             SW_read(&SW_data);
             // read current stopwatch time
-            while ( fgets(stopwatch_buffer, chardev_BYTES, stopwatch_fp) );  // read the stopwatch driver until EOF
-            stopwatch_buffer[ strcspn(stopwatch_buffer, "\n") ] = 0;         // remove \n from string
+            while ( fgets(stopwatch_buffer, chardev_BYTES, stopwatch_fp) ); 
+            stopwatch_buffer[ strcspn(stopwatch_buffer, "\n") ] = 0;       
             sscanf(stopwatch_buffer, "%d:%d:%d", &current_minutes,
                                                  &current_seconds, 
-                                                 &current_miliseconds);     // store cur time in seperate vars
-
+                                                 &current_miliseconds);   
 
             if( SW_data <= 59 ){
 
@@ -142,7 +132,6 @@ int main(int argc, char *argv[])
                 fflush(stopwatch_fp);
 
                 LEDR_set(SW_data);
-
             }
         }
         // KEY3 pressed = set MM part of stopwatch time
@@ -151,12 +140,11 @@ int main(int argc, char *argv[])
             // read SW value
             SW_read(&SW_data);
             // read current stopwatch time
-            while ( fgets(stopwatch_buffer, chardev_BYTES, stopwatch_fp) );  // read the stopwatch driver until EOF
-            stopwatch_buffer[ strcspn(stopwatch_buffer, "\n") ] = 0;         // remove \n from string
+            while ( fgets(stopwatch_buffer, chardev_BYTES, stopwatch_fp) );  
+            stopwatch_buffer[ strcspn(stopwatch_buffer, "\n") ] = 0;        
             sscanf(stopwatch_buffer, "%d:%d:%d", &current_minutes,
                                                  &current_seconds, 
-                                                 &current_miliseconds);     // store cur time in seperate vars
-
+                                                 &current_miliseconds);   
 
             if( SW_data <= 59 ){
 
@@ -170,12 +158,10 @@ int main(int argc, char *argv[])
                 fflush(stopwatch_fp);
 
                 LEDR_set(SW_data);
-
             }
         }
 
         sleep(0.1);
-
     }
 
     // turn off LEDRs 

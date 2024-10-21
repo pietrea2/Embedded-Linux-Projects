@@ -45,6 +45,7 @@ volatile int seconds;
 volatile int seconds_2;
 volatile int minutes;
 volatile int minutes_2;
+
 volatile int stop_stopwatch;
 volatile int display_on_hex;
 
@@ -75,7 +76,7 @@ static struct miscdevice chardev_STOPWATCH = {
 
 static int chardev_stopwatch_registered = 0;
 static char timer_stopwatch[MAX_SIZE]; // the character array that can be read
-static char command[MAX_SIZE];         // the character array that can be written to
+static char command[MAX_SIZE];         // char array that holds user command (writing to driver)
 
 
 
