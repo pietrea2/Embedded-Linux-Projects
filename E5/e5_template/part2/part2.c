@@ -9,36 +9,20 @@ int main(void)
     printf ("\e[2J");                     // clear the screen
     printf ("\e[?25l");                   // hide the cursor
 
-    plot_pixel (1, 1, CYAN, 'X');
-    plot_pixel (80, 24, CYAN, 'X');
-    /*
-    for (i = 8; i < 18; ++i)
-        plot_pixel (40, i, YELLOW, '*');
-    */
-
-   draw_line(1, 80, 1, 1, WHITE, '*');
-   draw_line(1, 80, 24, 24, WHITE, '*');
-   draw_line(1, 80, 24, 1, GREEN, '*');
-   draw_line(1, 20, 24, 1, MAGENTA, '|');
-   draw_line(1, 1, 24, 1, RED, '|');
-   draw_line(80, 1, 24, 5, BLUE, '*');
-   draw_line(1, 80, 24, 5, BLUE, '*');
-
+    draw_line(1, 80, 1, 1, WHITE, '*');
+    draw_line(1, 1, 24, 1, YELLOW, '|');
+    draw_line(1, 20, 24, 1, CYAN, '|');
+    draw_line(1, 40, 24, 1, MAGENTA, '*');
+    draw_line(1, 80, 24, 1, GREEN, '*');
+    draw_line(1, 80, 24, 6, BLUE, '*');
+    draw_line(1, 80, 24, 12, WHITE, '*');
+    draw_line(1, 80, 24, 24, WHITE, '*');
+    
     (void) getchar ();                    // wait for user to press return
     printf ("\e[2J");                     // clear the screen
     printf ("\e[%2dm", WHITE);            // reset foreground color
     printf ("\e[%d;%dH", 1, 1);           // move cursor to upper left
-    printf("\e[37m");
     printf ("\e[?25h");                   // show the cursor
-
-    /*
-    int a = 1;
-    int b = 2;
-    printf("A = %d B = %d", a, b);
-    swap(&a, &b);
-    printf("A = %d B = %d", a, b);
-    */
-
     fflush (stdout);
     return (0);
 }
