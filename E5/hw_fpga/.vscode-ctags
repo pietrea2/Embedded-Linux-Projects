@@ -1,0 +1,57 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_EXCMD	mixed	/number, pattern, mixed, or combineV2/
+!_TAG_OUTPUT_FILESEP	slash	/slash or backslash/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PATTERN_LENGTH_LIMIT	96	/0 for no limit/
+!_TAG_PROC_CWD	/media/bigwhoman/lin3/uoft/Embedded_Linux/Embedded-Linux---ECE1718/E5/hw_fpga/	//
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	5.9.0	//
+ABS	include/defines.h	/^#define ABS(/;"	d
+BLACK	include/defines.h	/^#define BLACK /;"	d
+BLUE	include/defines.h	/^#define BLUE /;"	d
+CYAN	include/defines.h	/^#define CYAN /;"	d
+DEFINES_H	include/defines.h	/^#define DEFINES_H$/;"	d
+FALSE	include/defines.h	/^#define FALSE	/;"	d
+FASTER	include/defines.h	/^#define FASTER	/;"	d
+GREEN	include/defines.h	/^#define GREEN /;"	d
+KEY0	include/defines.h	/^#define KEY0 /;"	d
+KEY1	include/defines.h	/^#define KEY1 /;"	d
+KEY2	include/defines.h	/^#define KEY2	/;"	d
+KEY3	include/defines.h	/^#define KEY3	/;"	d
+KEY_BYTES	include/defines.h	/^#define KEY_BYTES	/;"	d
+MAGENTA	include/defines.h	/^#define MAGENTA /;"	d
+NUM_XS	include/defines.h	/^#define NUM_XS	/;"	d
+NUM_XS_MAX	include/defines.h	/^#define NUM_XS_MAX	/;"	d
+RED	include/defines.h	/^#define RED /;"	d
+SCREEN_X	include/defines.h	/^#define SCREEN_X	/;"	d
+SCREEN_Y	include/defines.h	/^#define SCREEN_Y	/;"	d
+SLOWER	include/defines.h	/^#define SLOWER	/;"	d
+SW_BYTES	include/defines.h	/^#define SW_BYTES	/;"	d
+TRUE	include/defines.h	/^#define TRUE	/;"	d
+WHITE	include/defines.h	/^#define WHITE /;"	d
+YELLOW	include/defines.h	/^#define YELLOW /;"	d
+catchSIGINT	part3/part3.c	/^void catchSIGINT(int signum)$/;"	f	typeref:typename:void
+clean	part1/Makefile	/^clean:$/;"	t
+clean	part2/Makefile	/^clean:$/;"	t
+clean	part3/Makefile	/^clean:$/;"	t
+clean	part4/Makefile	/^clean:$/;"	t
+clean	part5/Makefile	/^clean:$/;"	t
+draw_line	part2/part2.c	/^void draw_line(int x0, int x1, int y0, int y1, char color, char c){$/;"	f	typeref:typename:void
+draw_line	part3/part3.c	/^void draw_line(int x0, int x1, int y0, int y1, char color, char c){$/;"	f	typeref:typename:void
+main	part1/part1.c	/^int main(void)$/;"	f	typeref:typename:int
+main	part2/part2.c	/^int main(void)$/;"	f	typeref:typename:int
+main	part3/part3.c	/^int main(void)$/;"	f	typeref:typename:int
+part1	part1/Makefile	/^part1: part1.c$/;"	t
+part2	part2/Makefile	/^part2: part2.c$/;"	t
+part3	part3/Makefile	/^part3: part3.c$/;"	t
+part4	part4/Makefile	/^part4: part4.c$/;"	t
+part5	part5/Makefile	/^part5: part5.c$/;"	t
+plot_pixel	part1/part1.c	/^void plot_pixel(int x, int y, char color, char c)$/;"	f	typeref:typename:void
+plot_pixel	part2/part2.c	/^void plot_pixel(int x, int y, char color, char c)$/;"	f	typeref:typename:void
+plot_pixel	part3/part3.c	/^void plot_pixel(int x, int y, char color, char c)$/;"	f	typeref:typename:void
+stop	part3/part3.c	/^volatile sig_atomic_t stop;$/;"	v	typeref:typename:volatile sig_atomic_t
+swap	part2/part2.c	/^void swap(int * a, int * b){$/;"	f	typeref:typename:void
+swap	part3/part3.c	/^void swap(int * a, int * b){$/;"	f	typeref:typename:void
