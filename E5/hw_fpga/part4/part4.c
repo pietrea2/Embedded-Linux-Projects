@@ -48,6 +48,7 @@ void move_vertex(struct vertex* v){
 
 int main(void)
 {
+    srand(time(NULL)); 
     struct timespec ts;
     ts.tv_sec = 0;          // used to delay
     ts.tv_nsec = 100000000; // 1 * 10^8 ns = 0.1 sec
@@ -57,28 +58,28 @@ int main(void)
     // int col = 1;
     // int col_step = 1;
     struct vertex v1 = {
-        .row = 1,
-        .col = 1,
-        .col_step = 1,
-        .row_step = 1
+        .row = rand() % 25 + 1,
+        .col = rand() % 25 + 1,
+        .col_step = rand() % 2 ? 1 : -1,
+        .row_step = rand() % 2 ? 1 : -1
     };
     struct vertex v2 = {
-        .row = 13,
-        .col = 17,
-        .col_step = -1,
-        .row_step = -1
+        .row = rand() % 25 + 1,
+        .col = rand() % 25 + 1,
+        .col_step = rand() % 2 ? 1 : -1,
+        .row_step = rand() % 2 ? 1 : -1
     };
     struct vertex v3 = {
-        .row = 12,
-        .col = 13,
-        .col_step = 1,
-        .row_step = -1
+        .row = rand() % 25 + 1,
+        .col = rand() % 25 + 1,
+        .col_step = rand() % 2 ? 1 : -1,
+        .row_step = rand() % 2 ? 1 : -1
     };
     struct vertex v4 = {
-        .row = 9,
-        .col = 5,
-        .col_step = -1,
-        .row_step = 1
+        .row = rand() % 25 + 1,
+        .col = rand() % 25 + 1,
+        .col_step = rand() % 2 ? 1 : -1,
+        .row_step = rand() % 2 ? 1 : -1
     };
 
     // catch SIGINT from ctrl+c, instead of having it abruptly close this program
