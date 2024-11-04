@@ -77,9 +77,7 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c){
     int is_steep = ABS(y1 - y0) > ABS(x1 - x0);
 
     if(is_steep){
-        //swap x0, y0
         swap(&x0, &y0);
-        //swap x1, y1
         swap(&x1, &y1);
     }
     if(x0 > x1){

@@ -91,6 +91,9 @@ int main(void)
     printf("\e[?25l"); // hide the cursor
 
 
+    //stored colour for all vertices and lines to share (for Added Feature #2)
+    int animation_colour = rand() % 7 + 31;
+
     //begin animation
     while (!stop)
     {
@@ -106,7 +109,7 @@ int main(void)
                     ts.tv_nsec *= 1.2;
                 break;
             case 4: //KEY2: Increase number of objects
-                if (num_xs < 26)
+                if (num_xs < 21)
                     num_xs++;
                 break;
             case 8: //KEY3: Decrease number of objects
@@ -122,14 +125,35 @@ int main(void)
 
 
 
-        //1. Draw objects
+        //1. Draw objects (vertices)
         for (i = 0; i < num_xs; i++)
         {
-            plot_pixel(vertexes[i].col, vertexes[i].row, vertexes[i].colour, 'X');
+            //Added Effect #3: vertices and lines stay constant colour
+            //if SW_9 is ON.
+            //Keep colour of vertices and lines to be their own saved colour.
+            if( (*SW_ptr & 0b1000000000) ){
+                plot_pixel(vertexes[i].col, vertexes[i].row, vertexes[i].colour, 'X');
+                animation_colour = rand() % 7 + 31;
+            }
+            //Added Effect #2: all vertices and lines are SAME colour
+            //if SW_8 is ON.
+            //Keep colour of vertices and lines to be animation_colour.
+            else if( (*SW_ptr & 0b0100000000) ){
+                plot_pixel(vertexes[i].col, vertexes[i].row, animation_colour, 'X');
+            }
+            //Added Effect #1: vertices and lines flicker different colours
+            //by default.
+            //Calc a new rand colour every iteration.
+            else{
+                vertexes[i].colour = rand() % 7 + 31;  
+                plot_pixel(vertexes[i].col, vertexes[i].row, vertexes[i].colour, 'X');
+                animation_colour = rand() % 7 + 31;
+            }
         }
 
-        //2. Draw lines (if SW is not on)
+        //2.a) Draw lines if SW is not on (specifically, if SW_0 ... SW_7 are OFF)
         if (!*(SW_ptr))
+        {
             for (i = 0; i < num_xs; i++)
             {
                 if (i == num_xs - 1)
@@ -141,6 +165,25 @@ int main(void)
                     draw_line(vertexes[i].col, vertexes[i + 1].col, vertexes[i].row, vertexes[i + 1].row, vertexes[i].colour, '*');
                 }
             }
+        }
+        //2.b) Draw lines if SW_8 or SW_9 are ON as well (Added Effect #2 and #3 can be activated)
+        else if(*SW_ptr == 512 || *SW_ptr == 256)
+        {
+            for (i = 0; i < num_xs; i++)
+            {
+                if (i == num_xs - 1)
+                {
+                    if(*SW_ptr == 256) draw_line(vertexes[i].col, vertexes[0].col, vertexes[i].row, vertexes[0].row, animation_colour, '*');
+                    else draw_line(vertexes[i].col, vertexes[0].col, vertexes[i].row, vertexes[0].row, vertexes[i].colour, '*');
+                }
+                else
+                {
+                    if(*SW_ptr == 256) draw_line(vertexes[i].col, vertexes[i + 1].col, vertexes[i].row, vertexes[i + 1].row, animation_colour, '*');
+                    else draw_line(vertexes[i].col, vertexes[i + 1].col, vertexes[i].row, vertexes[i + 1].row, vertexes[i].colour, '*');
+                }
+            }
+        }
+        
 
         //3. Move objects
         for (i = 0; i < num_xs; i++)
@@ -227,7 +270,7 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c)
     {
         swap(&x0, &y0);
         swap(&x1, &y1);
-        c = '|';
+        c = '|';                    // draw a | char when line is very steep (to make it look smoother)
     }
     if (x0 > x1)
     {
@@ -242,7 +285,7 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c)
     int y = y0;
     int x;
 
-    if(deltay <= 1) c = '-';
+    if(deltay <= 1) c = '-';        // draw a - char when line is very horizontal (to make it look smoother)
 
     //calc if line has positive or negative slope
     int y_step;
@@ -254,7 +297,7 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c)
     //main for loop for drawing algorithm
     for (x = x0; x <= x1; x++)
     {
-        if ((x == x0 && y == y0) || (x == x1 && y == y1))
+        if ((x == x0 && y == y0) || (x == x1 && y == y1))   // don't draw line char at the vertices
             continue;
         if (is_steep)
             plot_pixel(y, x, color, c);

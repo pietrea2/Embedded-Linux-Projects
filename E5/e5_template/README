@@ -42,3 +42,19 @@ or provide any additional information to the grader, PLEASE TYPE IT HERE:
 
 
 Please describe the additional features you added to part 5 here:
+
+For part5 we added 3 additional animation features (2 that are activated with SW_8 and SW_9).
+
+Feature #1 is that the vertices and lines flicker random colours as the program runs.
+This feature is active by default.
+If any switch between SW_0 - SW_7 is turned on, the
+lines between the vertices are not drawn.
+
+Feature #2 is that all vertices and lines are SAME global colour if SW_8 is ON.
+Also, if any switch between SW_0 - SW_7 is turned on when in this mode (SW_8 is ON), then the
+lines between the vertices are not drawn.
+
+Feature #3 is that vertices and lines stay their own constant colour if SW_9 is ON.
+This is stops the flickering of random colours (our default feature).
+Similarly, if any switch between SW_0 - SW_7 is turned on when in this mode, then the
+lines between the vertices are not drawn.

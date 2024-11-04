@@ -26,37 +26,22 @@ int main(void)
     ts.tv_sec = 0;          // used to delay
     ts.tv_nsec = 100000000; // 1 * 10^8 ns = 0.1 sec
 
-    srand( time(NULL) ); // seed rand()
+    srand( time(NULL) );    // seed rand()
 
-    //declare random initial positions for vertices
-    struct vertex v1 = {
-        .row = rand() % 24 + 1,
-        .col = rand() % 80 + 1,
-        .col_step = (rand() % 2) * 2 - 1,
-        .row_step = (rand() % 2) * 2 - 1,
-        .colour = rand() % 7 + 31
-    };
-    struct vertex v2 = {
-        .row = rand() % 24 + 1,
-        .col = rand() % 80 + 1,
-        .col_step = (rand() % 2) * 2 - 1,
-        .row_step = (rand() % 2) * 2 - 1,
-        .colour = rand() % 7 + 31
-    };
-    struct vertex v3 = {
-        .row = rand() % 24 + 1,
-        .col = rand() % 80 + 1,
-        .col_step =(rand() % 2) * 2 - 1,
-        .row_step = (rand() % 2) * 2 - 1,
-        .colour = rand() % 7 + 31
-    };
-    struct vertex v4 = {
-        .row = rand() % 24 + 1,
-        .col = rand() % 80 + 1,
-        .col_step = (rand() % 2) * 2 - 1,
-        .row_step = (rand() % 2) * 2 - 1,
-        .colour = rand() % 7 + 31
-    };
+    // init vertex variables
+    struct vertex vertexes[NUM_XS_MAX];
+    int num_xs = NUM_XS;
+    size_t i;
+
+    for (i = 0; i < NUM_XS; i++)
+    {
+        vertexes[i].row = rand() % SCREEN_Y + 1;
+        vertexes[i].col = rand() % SCREEN_X + 1;
+        vertexes[i].col_step = rand() % 2 ? 1 : -1;
+        vertexes[i].row_step = rand() % 2 ? 1 : -1;
+        vertexes[i].colour = rand() % 7 + 31;
+    }
+
 
     // catch SIGINT from ctrl+c, instead of having it abruptly close this program
     signal(SIGINT, catchSIGINT);
@@ -66,18 +51,17 @@ int main(void)
     while (!stop)
     {
         printf("\e[2J");   // clear the screen
-        plot_pixel(v1.col, v1.row, v1.colour, 'X');
-        plot_pixel(v2.col, v2.row, v2.colour, 'X');
-        plot_pixel(v3.col, v3.row, v3.colour, 'X');
-        plot_pixel(v4.col, v4.row, v4.colour, 'X');
-        draw_line(v1.col, v2.col, v1.row, v2.row, v1.colour, '*');    //draw line from v1 to v2
-        draw_line(v2.col, v3.col, v2.row, v3.row, v2.colour, '*');    //draw line from v2 to v3 
-        draw_line(v3.col, v4.col, v3.row, v4.row, v3.colour, '*');    //draw line from v3 to v4
-        draw_line(v4.col, v1.col, v4.row, v1.row, v4.colour, '*');    //draw line from v4 to v1
-        move_vertex(&v1);
-        move_vertex(&v2);
-        move_vertex(&v3);
-        move_vertex(&v4);
+
+        //draw all vertices and lines
+        for (i = 0; i < num_xs; i++){
+            plot_pixel(vertexes[i].col, vertexes[i].row, vertexes[i].colour, 'X');
+            draw_line(vertexes[i].col, vertexes[(i + 1)%num_xs].col, vertexes[i].row, vertexes[(i + 1)%num_xs].row, vertexes[i].colour, '*');
+        }
+
+        //move every vertex
+        for (i = 0; i < num_xs; i++){
+            move_vertex(&vertexes[i]);
+        }
 
         nanosleep(&ts, NULL); // added shifting delay
     }
@@ -152,11 +136,9 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c){
     int is_steep = ABS(y1 - y0) > ABS(x1 - x0);
 
     if(is_steep){
-        //swap x0, y0
         swap(&x0, &y0);
-        //swap x1, y1
         swap(&x1, &y1);
-        c = '|';
+        c = '|';                // draw a | char when line is very steep (to make it look smoother)
     }
     if(x0 > x1){
         swap(&x0, &x1);
@@ -170,7 +152,7 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c){
     int y = y0;
     int x;
 
-    if(deltay <= 1) c = '-';
+    if(deltay <= 1) c = '-';    // draw a - char when line is very horizontal (to make it look smoother)
 
     //calc if line has positive or negative slope
     int y_step;
@@ -180,7 +162,7 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c){
     //main for loop for drawing algorithm
     for(x = x0; x <= x1; x++){
 
-        if ((x == x0 && y == y0) || (x == x1 && y == y1)) continue;
+        if ((x == x0 && y == y0) || (x == x1 && y == y1)) continue; // don't draw line char at the vertices
         if(is_steep) plot_pixel(y, x, color, c);
         else plot_pixel(x, y, color, c);
 
