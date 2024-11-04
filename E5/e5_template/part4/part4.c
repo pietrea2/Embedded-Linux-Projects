@@ -4,47 +4,21 @@
 #include <time.h>
 #include "defines.h"
 
-void plot_pixel(int, int, char, char);
-void draw_line(int x0, int x1, int y0, int y1, char color, char c);
-
 struct vertex {
     int row;
     int col;
     int col_step;
     int row_step;
+    int colour;
 };
 
 volatile sig_atomic_t stop;
-void catchSIGINT(int signum)
-{
-    stop = 1;
-}
 
-void set_steps(struct vertex* v){
-        if (v -> row == 25)
-        {
-            v -> row_step = -1;
-            v ->row = 23;
-        }
-        else if (v ->row == 0)
-        {
-            v -> row_step = 1;
-            v ->row = 2;
-        }
-        if (v->col == 60) {
-            v->col_step = -1;
-            v->col = 59;
-        } else if (v->col == 0) {
-            v->col_step = 1;
-            v->col = 1;
-        }
-}
-
-void move_vertex(struct vertex* v){
-        v -> row += v -> row_step;
-        v -> col += v -> col_step;
-        set_steps(v);
-}
+void catchSIGINT(int signum);
+void set_steps(struct vertex* v);
+void move_vertex(struct vertex* v);
+void plot_pixel(int x, int y, char color, char c);
+void draw_line(int x0, int x1, int y0, int y1, char color, char c);
 
 int main(void)
 {
@@ -52,33 +26,36 @@ int main(void)
     ts.tv_sec = 0;          // used to delay
     ts.tv_nsec = 100000000; // 1 * 10^8 ns = 0.1 sec
 
-    // int row = 1;
-    // int row_step = 1;
-    // int col = 1;
-    // int col_step = 1;
+    srand( time(NULL) ); // seed rand()
+
+    //declare random initial positions for vertices
     struct vertex v1 = {
-        .row = 1,
-        .col = 1,
-        .col_step = 1,
-        .row_step = 1
+        .row = rand() % 24 + 1,
+        .col = rand() % 80 + 1,
+        .col_step = (rand() % 2) * 2 - 1,
+        .row_step = (rand() % 2) * 2 - 1,
+        .colour = rand() % 7 + 31
     };
     struct vertex v2 = {
-        .row = 13,
-        .col = 17,
-        .col_step = -1,
-        .row_step = -1
+        .row = rand() % 24 + 1,
+        .col = rand() % 80 + 1,
+        .col_step = (rand() % 2) * 2 - 1,
+        .row_step = (rand() % 2) * 2 - 1,
+        .colour = rand() % 7 + 31
     };
     struct vertex v3 = {
-        .row = 12,
-        .col = 13,
-        .col_step = 1,
-        .row_step = -1
+        .row = rand() % 24 + 1,
+        .col = rand() % 80 + 1,
+        .col_step =(rand() % 2) * 2 - 1,
+        .row_step = (rand() % 2) * 2 - 1,
+        .colour = rand() % 7 + 31
     };
     struct vertex v4 = {
-        .row = 9,
-        .col = 5,
-        .col_step = -1,
-        .row_step = 1
+        .row = rand() % 24 + 1,
+        .col = rand() % 80 + 1,
+        .col_step = (rand() % 2) * 2 - 1,
+        .row_step = (rand() % 2) * 2 - 1,
+        .colour = rand() % 7 + 31
     };
 
     // catch SIGINT from ctrl+c, instead of having it abruptly close this program
@@ -88,16 +65,15 @@ int main(void)
     printf("\e[?25l"); // hide the cursor
     while (!stop)
     {
-
         printf("\e[2J");   // clear the screen
-        plot_pixel(v1.col, v1.row, RED, 'X');
-        plot_pixel(v2.col, v2.row, BLUE, 'X');
-        plot_pixel(v3.col, v3.row, GREEN, 'X');
-        plot_pixel(v4.col, v4.row, WHITE, 'X');
-        draw_line(v1.col, v2.col, v1.row, v2.row, YELLOW, '*');    //draw line from v1 to v2
-        draw_line(v1.col, v3.col, v1.row, v3.row, YELLOW, '*');    //draw line from v1 to v3 
-        draw_line(v2.col, v4.col, v2.row, v4.row, YELLOW, '*');    //draw line from v2 to v4
-        draw_line(v3.col, v4.col, v3.row, v4.row, YELLOW, '*');    //draw line from v3 to v4
+        plot_pixel(v1.col, v1.row, v1.colour, 'X');
+        plot_pixel(v2.col, v2.row, v2.colour, 'X');
+        plot_pixel(v3.col, v3.row, v3.colour, 'X');
+        plot_pixel(v4.col, v4.row, v4.colour, 'X');
+        draw_line(v1.col, v2.col, v1.row, v2.row, v1.colour, '*');    //draw line from v1 to v2
+        draw_line(v2.col, v3.col, v2.row, v3.row, v2.colour, '*');    //draw line from v2 to v3 
+        draw_line(v3.col, v4.col, v3.row, v4.row, v3.colour, '*');    //draw line from v3 to v4
+        draw_line(v4.col, v1.col, v4.row, v1.row, v4.colour, '*');    //draw line from v4 to v1
         move_vertex(&v1);
         move_vertex(&v2);
         move_vertex(&v3);
@@ -114,6 +90,42 @@ int main(void)
     return (0);
 }
 
+//update row and col step variable to deal with screen boundaries
+//in order to 'bounce' the vertex when it reaches a boundary
+void set_steps(struct vertex* v){
+
+    //row boundary: 1 <= Y <= 24
+    if (v -> row == 25) {
+        v -> row_step = -1;
+        v ->row = 23;
+    }
+    else if (v ->row == 0) {
+        v -> row_step = 1;
+        v ->row = 2;
+    }
+
+    //col boundary: 1<= X <= 80
+    if (v->col == 81) {
+        v->col_step = -1;
+        v->col = 79;
+    } 
+    else if (v->col == 0) {
+        v->col_step = 1;
+        v->col = 2;
+    }
+}
+
+void move_vertex(struct vertex* v){
+    v -> row += v -> row_step;
+    v -> col += v -> col_step;
+    set_steps(v);
+}
+
+void catchSIGINT(int signum)
+{
+    stop = 1;
+}
+
 void plot_pixel(int x, int y, char color, char c)
 {
     /*
@@ -124,8 +136,8 @@ void plot_pixel(int x, int y, char color, char c)
     fflush(stdout);
 }
 
-void swap(int *a, int *b)
-{
+//Function to swap 2 variable values
+void swap(int * a, int * b){
 
     int swap_var;
 
@@ -134,50 +146,50 @@ void swap(int *a, int *b)
     *b = swap_var;
 }
 
-// Bresenham’s algorithm
-void draw_line(int x0, int x1, int y0, int y1, char color, char c)
-{
+//Bresenham’s line-drawing algorithm
+void draw_line(int x0, int x1, int y0, int y1, char color, char c){
 
     int is_steep = ABS(y1 - y0) > ABS(x1 - x0);
 
-    if (is_steep)
-    {
-        // swap x0, y0
+    if(is_steep){
+        //swap x0, y0
         swap(&x0, &y0);
-        // swap x1, y1
+        //swap x1, y1
         swap(&x1, &y1);
+        c = '|';
     }
-    if (x0 > x1)
-    {
+    if(x0 > x1){
         swap(&x0, &x1);
         swap(&y0, &y1);
     }
 
+    //define vars used for Bresenham's algorithm
     int deltax = x1 - x0;
     int deltay = ABS(y1 - y0);
-    int error = -(deltax / 2);
+    int error = - (deltax / 2);
     int y = y0;
     int x;
 
+    if(deltay <= 1) c = '-';
+
+    //calc if line has positive or negative slope
     int y_step;
-    if (y0 < y1)
-        y_step = 1;
-    else
-        y_step = -1;
+    if(y0 < y1) y_step = 1;
+    else y_step = -1;
 
-    for (x = x0; x <= x1; x++)
-    {
-        if ((x == x0 && y == y0) || (x == x1 && y == y1))
-            continue;
-        if (is_steep )
-            plot_pixel(y, x, color, c);
-        else
-            plot_pixel(x, y, color, c);
+    //main for loop for drawing algorithm
+    for(x = x0; x <= x1; x++){
 
+        if ((x == x0 && y == y0) || (x == x1 && y == y1)) continue;
+        if(is_steep) plot_pixel(y, x, color, c);
+        else plot_pixel(x, y, color, c);
+
+        //calc error again
+        //if greater than 0, draw pixel with y coordinate updated
+        //if not, keep drawing pixels at same y coordinate
         error = error + deltay;
 
-        if (error > 0)
-        {
+        if(error > 0){
             y = y + y_step;
             error = error - deltax;
         }

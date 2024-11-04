@@ -37,6 +37,7 @@ void plot_pixel(int x, int y, char color, char c)
     fflush (stdout);
 }
 
+//Function to swap 2 variable values
 void swap(int * a, int * b){
 
     int swap_var;
@@ -46,7 +47,7 @@ void swap(int * a, int * b){
     *b = swap_var;
 }
 
-//Bresenham’s algorithm
+//Bresenham’s line-drawing algorithm
 void draw_line(int x0, int x1, int y0, int y1, char color, char c){
 
     int is_steep = ABS(y1 - y0) > ABS(x1 - x0);
@@ -62,20 +63,26 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c){
         swap(&y0, &y1);
     }
 
+    //define vars used for Bresenham's algorithm
     int deltax = x1 - x0;
     int deltay = ABS(y1 - y0);
     int error = - (deltax / 2);
     int y = y0;
     int x;
 
+    //calc if line has positive or negative slope
     int y_step;
     if(y0 < y1) y_step = 1;
     else y_step = -1;
 
+    //main for loop for drawing algorithm
     for(x = x0; x <= x1; x++){
         if(is_steep) plot_pixel(y, x, color, c);
         else plot_pixel(x, y, color, c);
 
+        //calc error again
+        //if greater than 0, draw pixel with y coordinate updated
+        //if not, keep drawing pixels at same y coordinate
         error = error + deltay;
 
         if(error > 0){

@@ -4,14 +4,11 @@
 #include <time.h>
 #include "defines.h"
 
+void catchSIGINT(int signum);
 void plot_pixel(int, int, char, char);
 void draw_line(int x0, int x1, int y0, int y1, char color, char c);
 
 volatile sig_atomic_t stop;
-void catchSIGINT(int signum)
-{
-    stop = 1;
-}
 
 int main(void)
 {
@@ -30,16 +27,15 @@ int main(void)
 
     while (!stop) {
         
-        printf ("\e[2J");      // clear the screen
-        draw_line(20, 60, row, row, GREEN, '*');    //draw line
+        printf ("\e[2J");                           // clear the screen
+        draw_line(20, 60, row, row, GREEN, '*');    // draw line
 
         row += row_step;       
 
-        if (row == 25){ row_step = -1; row = 23; }
+        if (row == 25){ row_step = -1; row = 23; }  // border definitions: 1 <= Y <= 24
         else if (row == 0){ row_step = 1; row = 2; }
 
-        nanosleep (&ts, NULL);    //added shifting delay
-
+        nanosleep (&ts, NULL);                      // added shifting delay
     }
 
     printf ("\e[2J");                     // clear the screen
@@ -48,6 +44,11 @@ int main(void)
     printf ("\e[?25h");                   // show the cursor
     fflush (stdout);
     return (0);
+}
+
+void catchSIGINT(int signum)
+{
+    stop = 1;
 }
 
 void plot_pixel(int x, int y, char color, char c)
@@ -60,6 +61,7 @@ void plot_pixel(int x, int y, char color, char c)
     fflush (stdout);
 }
 
+//Function to swap 2 variable values
 void swap(int * a, int * b){
 
     int swap_var;
@@ -69,7 +71,7 @@ void swap(int * a, int * b){
     *b = swap_var;
 }
 
-//Bresenham’s algorithm
+//Bresenham’s line-drawing algorithm
 void draw_line(int x0, int x1, int y0, int y1, char color, char c){
 
     int is_steep = ABS(y1 - y0) > ABS(x1 - x0);
@@ -85,20 +87,26 @@ void draw_line(int x0, int x1, int y0, int y1, char color, char c){
         swap(&y0, &y1);
     }
 
+    //define vars used for Bresenham's algorithm
     int deltax = x1 - x0;
     int deltay = ABS(y1 - y0);
     int error = - (deltax / 2);
     int y = y0;
     int x;
 
+    //calc if line has positive or negative slope
     int y_step;
     if(y0 < y1) y_step = 1;
     else y_step = -1;
 
+    //main for loop for drawing algorithm
     for(x = x0; x <= x1; x++){
         if(is_steep) plot_pixel(y, x, color, c);
         else plot_pixel(x, y, color, c);
 
+        //calc error again
+        //if greater than 0, draw pixel with y coordinate updated
+        //if not, keep drawing pixels at same y coordinate
         error = error + deltay;
 
         if(error > 0){
