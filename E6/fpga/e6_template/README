@@ -1,0 +1,52 @@
+To facilitate accurate marking, your submitted solution must use this template.
+
+
+To complete each part of the exercise, add your own code to the following files:
+part1: part1.c, video.c
+part2: part2.c, video.c
+part3: part3.c, video.c
+part4: part4.c, video.c
+part5: part5.c, video.c
+part6: part6.c, video.c
+
+
+Note: parts 5 and 6 require reading key and switch values.  You may choose to use the built-in 
+drivers (located in /home/root/Linux_Libraries/drivers/) or the KEY_SW driver you wrote for 
+lab exercise 4 (please include your driver with your submission, and note that you will need 
+to modify the runall.sh script to load your driver).
+
+
+Note: you will need to either connect your De1SoC to a VGA monitor or run the provided
+VGA emulator prior to running the runall.sh script.
+
+To use the vga emulator:
+Connect to your De1SoC using a VNC viewer.
+Type 'make' in the vga_emulator directory.
+Run the emulator using './vga'
+Run the runall.sh script in a separate terminal.
+
+
+Please test your solution using the provided runall.sh script:
+part1: ./runall.sh 1
+part2: ./runall.sh 2
+part3: ./runall.sh 3
+part4: ./runall.sh 4
+part5: ./runall.sh 5
+part6: ./runall.sh 6
+
+
+To clean all directories and remove all drivers: ./runall clean
+
+
+To submit your solution: ./runall.sh submit 
+The script generates a .tar.bz2 archive. Please upload this
+archive to quercus (only one team member needs to do this).
+
+
+The script may generate errors, for example:
+ERROR: Removing 'timer': No such file or directory
+These errors can be ignored.
+
+
+If you would like to clarify your interpretation of the exercise instructions 
+or provide any additional information to the grader, PLEASE TYPE IT HERE:
