@@ -1,0 +1,8 @@
+{
+    "files.associations": {
+        "*.rmd": "markdown",
+        "stdio.h": "c",
+        "address_map_arm.h": "c",
+        "random": "c"
+    }
+}
