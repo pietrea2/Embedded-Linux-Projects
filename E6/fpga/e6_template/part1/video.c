@@ -15,7 +15,7 @@
 
 void *LW_virtual;   // used to access FPGA light-weight bridge
 volatile int * pixel_ctrl_ptr; // virtual address of pixel buffer controller
-int pixel_buffer;   // used for virtual address of pixel buffer
+int * pixel_buffer;   // used for virtual address of pixel buffer
 int resolution_x, resolution_y; // VGA screen size 
 
 // Vars and prototypes for a char driver
@@ -73,9 +73,10 @@ static int __init start_video(void){
     get_screen_specs (pixel_ctrl_ptr); // determine X, Y screen size
 
     // Create virtual memory access to the pixel buffer
-    pixel_buffer = (int) ioremap_nocache(FPGA_ONCHIP_BASE, FPGA_ONCHIP_SPAN);
+    pixel_buffer = (int *)ioremap_nocache(FPGA_ONCHIP_BASE, FPGA_ONCHIP_SPAN);
     if (pixel_buffer == 0)
         printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
+    printk(KERN_INFO "%p -a-a-a--a \n", pixel_buffer);
     
     /* Erase the pixel buffer */
     clear_screen();
@@ -84,6 +85,10 @@ static int __init start_video(void){
 
 void get_screen_specs(volatile int * pixel_ctrl_ptr){
     /* TODO */
+    printk(KERN_INFO "----------> %X\n", *(pixel_ctrl_ptr + 2));
+    resolution_x = (*(pixel_ctrl_ptr + 2)) & 0xFFFF;
+    resolution_y = ((*(pixel_ctrl_ptr + 2)) & 0xFFFF0000) >> 16;
+    printk(KERN_INFO " : %x -- : %x\n",*(pixel_ctrl_ptr), *(pixel_ctrl_ptr + 1));
 }
 
 void clear_screen(){
@@ -92,6 +97,11 @@ void clear_screen(){
 
 void plot_pixel(int x, int y, short int color){
     /* TODO */
+    // *(pixel_buffer +  (((x) | ((y << 9))) << 1 )/4) = color;
+    // printk(KERN_INFO "%X , %X , %X , %X, %X, %X\n", x, y, (x & 0x1FF) , (y & 0xFF), ((y & 0xFF) << 9), ((x & 0x1FF) | ((y & 0xFF) << 9)));
+    // printk(KERN_INFO "%X , %X , %X\n", pixel_buffer ,  (((x & 0x1FF) | ((y & 0xFF) << 9)) << 1 )/4,(int *)((void *)pixel_buffer + (((x & 0x1FF) | ((y& 0xFF) << 9)) << 1 )));
+    // *pixel_buffer = color;
+    // *(int *)((void *)pixel_buffer + (((x & 0x1FF) | ((y& 0xFF) << 9)) << 1 )) = color;
 }
 
 static void __exit stop_video(void){
@@ -135,7 +145,7 @@ static ssize_t device_write(struct file *filp, const char
     size_t bytes;
     bytes = length;
     int x,y;
-    int color;
+    short int color;
     if (bytes > MAX_SIZE - 1)    // can copy all at once, or not?
         bytes = MAX_SIZE - 1;
     if (copy_from_user (chardev_video_msg, buffer, bytes) != 0)
@@ -150,8 +160,8 @@ static ssize_t device_write(struct file *filp, const char
         printk(KERN_INFO "Clear Screen !!!!\n");
         /* TODO */
     } else if (sscanf(chardev_video_msg, "pixel %d,%d %X", &x, &y, &color ) == 3) {
-        printk(KERN_INFO "Color Pixel : %d, %d ---> %X\n", x, y , color);
-
+        // printk(KERN_INFO "Color Pixel : %d,%d ---> %X\n", x, y , color);
+        *(int *)((void *)pixel_buffer + (((x & 0x1FF) | ((y& 0xFF) << 9)) << 1 )) = color;
         /* TODO */
     } else {
         printk(KERN_ERR "Wrong Command\n");
