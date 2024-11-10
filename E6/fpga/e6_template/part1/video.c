@@ -22,9 +22,13 @@ int resolution_x, resolution_y; // VGA screen size
 #define SUCCESS 0
 #define DEV_NAME_VIDEO "video"
 
-static int device_open_video (struct inode *, struct file *);
-static int device_release_video (struct inode *, struct file *);
-static ssize_t device_write_video (struct file *, const char *, size_t, loff_t *);
+static int device_open (struct inode *, struct file *);
+static int device_release (struct inode *, struct file *);
+static ssize_t device_write (struct file *, const char *, size_t, loff_t *);
+static ssize_t device_read(struct file *, char* , size_t , loff_t *);
+void get_screen_specs(volatile int * );
+void clear_screen(void);
+void plot_pixel(int , int , short int );
 
 static struct file_operations chardev_video_fops = {
     .owner = THIS_MODULE,
@@ -44,6 +48,7 @@ static struct miscdevice chardev_video = {
 
 #define MAX_SIZE 256                     // we assume that no message will be longer than this
 static char chardev_video_msg[MAX_SIZE];  // the character array that can be read
+static char chardev_read[MAX_SIZE];     // the character array that would be writen on
 
 /* Code to initialize the video driver */
 static int __init start_video(void){
@@ -64,7 +69,7 @@ static int __init start_video(void){
         printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
 
     // Create virtual memory access to the pixel buffer controller
-    pixel_ctrl_ptr = (unsigend int *) (LW_virtual + PIXEL_BUF_CTRL_BASE);
+    pixel_ctrl_ptr = (unsigned int *) (LW_virtual + PIXEL_BUF_CTRL_BASE);
     get_screen_specs (pixel_ctrl_ptr); // determine X, Y screen size
 
     // Create virtual memory access to the pixel buffer
@@ -96,6 +101,8 @@ static void __exit stop_video(void){
 
     /* Remove the device from the kernel */
     /* TODO */
+    misc_deregister(&chardev_video);
+    printk(KERN_INFO "/dev/%s driver de-registered\n", DEV_NAME_VIDEO);
 }
 
 static int device_open(struct inode *inode, struct file *file){
@@ -109,15 +116,22 @@ static int device_release(struct inode *inode, struct file *file){
 static ssize_t device_read(struct file *filp, char* buffer,
     size_t length, loff_t *offset) {
         /* TODO */
-    
+    sprintf(chardev_read, "%d %d\n",resolution_x, resolution_y);
+    size_t bytes;
+    bytes = strlen(chardev_read) - (*offset); // how many bytes not yet sent?
+    bytes = bytes > length ? length : bytes;     // too much to send all at once?
+
+    if (bytes)
+        if (copy_to_user(buffer, &chardev_read[*offset], bytes) != 0)
+            printk(KERN_ERR "Error: copy_to_user unsuccessful");
+    *offset = bytes; // keep track of number of bytes sent to the user
+
+    return bytes;
 }
 
 static ssize_t device_write(struct file *filp, const char 
     *buffer, size_t length, loff_t *offset) {
-    int ledr_value;
-    static char str_value_input[7];
-    int not_hex = 0;
-    int i;
+    // static char str_value_input[7];
     size_t bytes;
     bytes = length;
     int x,y;
@@ -132,16 +146,17 @@ static ssize_t device_write(struct file *filp, const char
     /*
     *   Parse input
     */
-    if (sscanf(chardev_video_msg, "clear", )){
+    if (!strncmp(chardev_video_msg, "clear", 5)){
         printk(KERN_INFO "Clear Screen !!!!\n");
         /* TODO */
-    } else if (sscanf(chardev_video_msg, "pixel %d,%d %X", &x, &y, &color )) {
-        printk(KERN_INFO "Color Pixel\n");
+    } else if (sscanf(chardev_video_msg, "pixel %d,%d %X", &x, &y, &color ) == 3) {
+        printk(KERN_INFO "Color Pixel : %d, %d ---> %X\n", x, y , color);
+
         /* TODO */
     } else {
         printk(KERN_ERR "Wrong Command\n");
     }                 
-    int string_length = strlen(str_value_input);
+    // int string_length = strlen(str_value_input);
 
 
     //DOUBLE CHECK FOR VALID INPUT: EXPECTS 3 DIGIT HEX INPUT
