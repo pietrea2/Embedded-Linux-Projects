@@ -79,18 +79,12 @@ int main(int argc, char *argv[]){
         {
                 if (i == num_xs - 1)
                 {
-                    sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col - 2 * vertexes[i].col_step,
-                        vertexes[i].row - 2 * vertexes[i].row_step, vertexes[0].col - 2 * vertexes[0].col_step, vertexes[0].row - 2 * vertexes[0].row_step, 0);
-                    write(video_FD, command, sizeof(command));
                     sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col,
                         vertexes[i].row, vertexes[0].col, vertexes[0].row, 0xCCCC);
                     write(video_FD, command, sizeof(command));
                 }
                 else
                 {
-                    sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col - 2 * vertexes[i].col_step,
-                        vertexes[i].row - 2 * vertexes[i].row_step, vertexes[i+1].col - 2 * vertexes[i+1].col_step, vertexes[i+1].row - 2 * vertexes[i+1].row_step, 0);
-                    write(video_FD, command, sizeof(command));
                     sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col,
                         vertexes[i].row, vertexes[i+1].col, vertexes[i+1].row, 0xCCCC);
                     write(video_FD, command, sizeof(command));
