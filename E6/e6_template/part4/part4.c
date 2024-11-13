@@ -6,168 +6,189 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <time.h>
-#include "part4.h"
 
-/**  your part 1 user code here  **/
 #define video_BYTES 8
-#define true 1
-#define false 0
-#define NUM_XS_MAX 5
-#define NUM_XS 5
-int screen_x, screen_y;
-void catchSIGINT(int signum);
-volatile sig_atomic_t stop;
-// void set_steps(struct vertex* v);
-// void move_vertex(struct vertex* v);
+#define NUM_VERTEX 8
 
-struct vertex
-{
+int box_size = 2;           // CHANGE SIZE OF BOXES
+int screen_x, screen_y;
+volatile sig_atomic_t stop;
+
+struct vertex {
     int row;
     int col;
     int col_step;
     int row_step;
-	int last_col0;
-	int last_row0;
-	int last_col1;
-	int last_row1;
+	int last_col_buf0;      // store last coordinates to erase for buffer 0 (front/back)
+	int last_row_buf0;
+	int last_col_buf1;      // store last coordinates to erase for buffer 1 (front/back)
+	int last_row_buf1;
+    short int color;
 };
 
+void set_steps(struct vertex* v);
+void move_vertex(struct vertex* v);
+void catchSIGINT(int signum);
 
-void catchSIGINT(int signum)
-{
-    stop = 1;
-}
+int main(int argc, char *argv[]) {
 
-int main(int argc, char *argv[]){
-    stop = 0;
-    int video_FD;   // file descriptor
-    char buffer[video_BYTES];   // buffer for data read from /dev/video 
-    char command[64];   // buffer for commands written to /dev/video
-    size_t i;
-	int boofer;
-	boofer = 0;
-    srand(time(NULL));
     signal(SIGINT, catchSIGINT);
-    if ((video_FD = open("/dev/video",O_RDWR) ) == -1){
+    stop = 0;
+    int video_FD;               // file descriptor
+    char buffer[video_BYTES];   // buffer for data read from /dev/video 
+    char command[64];           // buffer for commands written to /dev/video
+
+    srand( time(NULL) );
+
+    if ( (video_FD = open("/dev/video",O_RDWR) ) == -1){
         printf("Error opening /dev/video: %s\n", strerror(errno));
         return -1;
     }
 
-
-    struct vertex vertexes[NUM_XS_MAX];
-    int num_xs = NUM_XS;
-    read(video_FD, buffer, sizeof(buffer));
+    read(video_FD, buffer, sizeof(buffer));             // read buffer and set screen_x, screen_y
     sscanf(buffer,"%d %d", &screen_x, &screen_y);
-    for (i = 0; i < NUM_XS_MAX; i++)
-    {
-        vertexes[i].row = rand() % screen_y + 1;
-        vertexes[i].col = rand() % screen_x + 1;
+
+
+
+    int a;
+    for(a = 0; a < 2; a++){                             // do twice! for each pixel buffer
+        sprintf(command, "clear");
+        write(video_FD, command, sizeof(command));      // clear VGA display
+        sprintf(command, "sync");                       // VGA sync
+        write(video_FD, command, sizeof(command));
+    }
+
+
+    struct vertex vertexes[NUM_VERTEX];                 // init 8 vertex positions and colors (random)
+    int num_xs = NUM_VERTEX;
+    size_t i;
+    for (i = 0; i < num_xs; i++) {
+        vertexes[i].row = rand() % (screen_y - box_size);
+        vertexes[i].col = rand() % (screen_x - box_size);
         vertexes[i].col_step = rand() % 2 ? 1 : -1;
         vertexes[i].row_step = rand() % 2 ? 1 : -1;
-		vertexes[i].last_col0 = 0;
-		vertexes[i].last_col1 = 0;
-		vertexes[i].last_row0 = 0;
-		vertexes[i].last_row1 = 0;
+		vertexes[i].last_col_buf1 = 0;
+		vertexes[i].last_col_buf0 = 0;
+		vertexes[i].last_row_buf1 = 0;
+		vertexes[i].last_row_buf0 = 0;
+        vertexes[i].color = (short int) ( rand() % 65536 ) + 60;  // rand color (other than black)
     }
 
-    
-    sprintf(command, "clear");
+
+    // draw first vertices and lines
+    for (i = 0; i < num_xs; i++) {
+        sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].col, vertexes[i].row, vertexes[i].col + box_size, vertexes[i].row + box_size, vertexes[i].color); // draw box (vertex)
+        write (video_FD, command, strlen(command));
+
+        sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col, vertexes[i].row, vertexes[(i + 1)%num_xs].col, vertexes[(i + 1)%num_xs].row, vertexes[i].color); // draw line
+        write (video_FD, command, strlen(command));
+    }
+
+    sprintf(command, "sync");                       // VGA sync
     write(video_FD, command, sizeof(command));
-	
+
+    // save this last col for both buffers
+    for ( i = 0; i < num_xs; i++){  
+        vertexes[i].last_col_buf0 = vertexes[i].col;
+        vertexes[i].last_row_buf0 = vertexes[i].row;
+        vertexes[i].last_col_buf1 = vertexes[i].col;
+        vertexes[i].last_row_buf1 = vertexes[i].row;
+        move_vertex(&vertexes[i]);
+    }
+
+    int buffer_num;
+	buffer_num = 0;
+
     while(!stop){
 
-        for (i = 0; i < num_xs; i++)
-        {
-			if(boofer){
-				sprintf (command, "pixel %d,%d %hX\n", vertexes[i].last_col1,
-                vertexes[i].last_row1, 0x0); // yellow
-            write(video_FD, command, sizeof(command));
-			} else {
-				sprintf (command, "pixel %d,%d %hX\n", vertexes[i].last_col0,
-                vertexes[i].last_row0, 0x0); // yellow
-            write(video_FD, command, sizeof(command));
-			}
-            
-            sprintf (command, "pixel %d,%d %hX\n", vertexes[i].col,
-                vertexes[i].row, 0xFFFF);
-            write(video_FD, command, sizeof(command));
+        // Clear previous vertices and lines (draw black)
+        for (i = 0; i < num_xs; i++) {
+
+            int last_col_1 = buffer_num ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
+            int last_row_1 = buffer_num ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
+           
+            int last_col_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
+            int last_row_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
+			
+            sprintf (command, "box %d,%d %d,%d %hX\n", last_col_1, last_row_1, (last_col_1 + box_size), (last_row_1 + box_size), 0x0);
+            write (video_FD, command, strlen(command));
+
+            sprintf (command, "line %d,%d %d,%d %hX\n", last_col_1, last_row_1, last_col_2, last_row_2, 0x0);
+            write (video_FD, command, strlen(command));
         }
 
-        for (i = 0; i < num_xs; i++) 
-        {
-				int last_cola = boofer ? vertexes[i].last_col1 : vertexes[i].last_col0;
-				int last_rowa = boofer ? vertexes[i].last_row1 : vertexes[i].last_row0;
-                if (i == num_xs - 1)
-                {
-					
-					int last_colb = boofer ? vertexes[0].last_col1 : vertexes[0].last_col0;
-					int last_rowb = boofer ? vertexes[0].last_row1 : vertexes[0].last_row0;
-                    sprintf (command, "line %d,%d %d,%d %hX\n", last_cola,
-                        last_rowa, last_colb, last_rowb, 0);
-                    write(video_FD, command, sizeof(command));
-                    sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col,
-                        vertexes[i].row, vertexes[0].col, vertexes[0].row, 0xCCCC);
-                    write(video_FD, command, sizeof(command));
-                }
-                else
-                {
-                    int last_colb = boofer ? vertexes[i+1].last_col1 : vertexes[i+1].last_col0;
-					int last_rowb = boofer ? vertexes[i+1].last_row1 : vertexes[i+1].last_row0;
-                    sprintf (command, "line %d,%d %d,%d %hX\n", last_cola,
-                        last_rowa, last_colb, last_rowb, 0);
-                    write(video_FD, command, sizeof(command));
-                    sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col,
-                        vertexes[i].row, vertexes[i+1].col, vertexes[i+1].row, 0xCCCC);
-                    write(video_FD, command, sizeof(command));
-                }
+        // Draw new vertices and lines
+        for (i = 0; i < num_xs; i++) {
+            sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].col, vertexes[i].row, vertexes[i].col + box_size, vertexes[i].row + box_size, vertexes[i].color);
+            write (video_FD, command, strlen(command));
+
+            sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].col, vertexes[i].row, vertexes[(i + 1)%num_xs].col, vertexes[(i + 1)%num_xs].row, vertexes[i].color);
+            write (video_FD, command, strlen(command));
         }
         
-        sprintf(command, "sync");
+        sprintf(command, "sync");                   // sync VGA
         write(video_FD, command, sizeof(command));
-        for ( i = 0; i < num_xs; i++)
-        {
-            if (vertexes[i].col >= screen_x - 10){
-                
-                vertexes[i].col_step = -1;
-            
-            }
-            if (vertexes[i].col <= 2 ){
-                
-                vertexes[i].col_step = 1;
-            }
-            if (vertexes[i].row >= screen_y - 10){
-                
-                vertexes[i].row_step = -1;
-            }
-            if (vertexes[i].row <= 2) {
-                
-                vertexes[i].row_step = 1;
-            }
-			if (boofer){
-				vertexes[i].last_col1 = vertexes[i].col;
-				vertexes[i].last_row1 = vertexes[i].row;
-			} else {
-				vertexes[i].last_col0 = vertexes[i].col;
-				vertexes[i].last_row0 = vertexes[i].row;
+
+		buffer_num = !buffer_num;                   // buffer switched after sync
+
+        // Save current positions for other buffer + update positons
+        for ( i = 0; i < num_xs; i++){
+			if (buffer_num){
+				vertexes[i].last_col_buf1 = vertexes[i].col;
+				vertexes[i].last_row_buf1 = vertexes[i].row;
 			}
-			
-            vertexes[i].col += vertexes[i].col_step;
-            vertexes[i].row += vertexes[i].row_step;
+            else {
+				vertexes[i].last_col_buf0 = vertexes[i].col;
+				vertexes[i].last_row_buf0 = vertexes[i].row;
+			}
+            move_vertex(&vertexes[i]);
         }
-		
-		boofer = !boofer;
-		
     }
-    printf("done\n");
-    sprintf(command, "clear");
-    write(video_FD, command, sizeof(command));
-    sprintf(command, "clear");
-    write(video_FD, command, sizeof(command));
+
+
+
+    for(a = 0; a < 2; a++){                             // do twice for each pixel buffer
+        sprintf(command, "clear");
+        write(video_FD, command, sizeof(command));      // clear VGA display
+        sprintf(command, "sync");                       // VGA sync
+        write(video_FD, command, sizeof(command));
+    }
 
     close(video_FD);
     return 0;
 }
-void edge_clear(char command[64], size_t i, size_t j, size_t k, size_t l, int video_FD)
-{
-    
+
+void catchSIGINT(int signum) {
+    stop = 1;
+}
+
+//update row and col step variable to deal with screen boundaries
+//in order to 'bounce' the vertex when it reaches a boundary
+void set_steps(struct vertex* v){
+
+    //row boundary: 0 <= Y <= 239
+    if (v -> row == (screen_y - box_size) - 1 ) {
+        v -> row_step = -1;
+        v ->row = screen_y - box_size - 2;
+    }
+    else if (v ->row == -1) {
+        v -> row_step = 1;
+        v ->row = 1;
+    }
+
+    //col boundary: 0 <= X <= 319
+    if (v->col == (screen_x - box_size) - 1 ) {
+        v->col_step = -1;
+        v->col = screen_x - box_size - 2;
+    } 
+    else if (v->col == -1) {
+        v->col_step = 1;
+        v->col = 1;
+    }
+}
+
+void move_vertex(struct vertex* v){
+    v -> row += v -> row_step;
+    v -> col += v -> col_step;
+    set_steps(v);
 }
