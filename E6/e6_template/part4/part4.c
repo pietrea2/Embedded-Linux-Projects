@@ -45,10 +45,9 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+	sleep(1);
     read(video_FD, buffer, sizeof(buffer));             // read buffer and set screen_x, screen_y
     sscanf(buffer,"%d %d", &screen_x, &screen_y);
-
-
 
     int a;
     for(a = 0; a < 2; a++){                             // do twice! for each pixel buffer
@@ -56,8 +55,10 @@ int main(int argc, char *argv[]) {
         write(video_FD, command, sizeof(command));      // clear VGA display
         sprintf(command, "sync");                       // VGA sync
         write(video_FD, command, sizeof(command));
+		sleep(0.1);
     }
 
+	sleep(1);
 
     struct vertex vertexes[NUM_VERTEX];                 // init 8 vertex positions and colors (random)
     int num_xs = NUM_VERTEX;
@@ -74,6 +75,7 @@ int main(int argc, char *argv[]) {
         vertexes[i].color = (short int) ( rand() % 65536 ) + 60;  // rand color (other than black)
     }
 
+	sleep(1);
 
     // draw first vertices and lines
     for (i = 0; i < num_xs; i++) {
@@ -169,21 +171,21 @@ void set_steps(struct vertex* v){
     //row boundary: 0 <= Y <= 239
     if (v -> row == (screen_y - box_size) - 1 ) {
         v -> row_step = -1;
-        v ->row = screen_y - box_size - 2;
+        //v ->row = screen_y - box_size - 2;
     }
-    else if (v ->row == -1) {
+    else if (v ->row == 0) {
         v -> row_step = 1;
-        v ->row = 1;
+        //v ->row = 1;
     }
 
     //col boundary: 0 <= X <= 319
     if (v->col == (screen_x - box_size) - 1 ) {
         v->col_step = -1;
-        v->col = screen_x - box_size - 2;
+        //v->col = screen_x - box_size - 2;
     } 
-    else if (v->col == -1) {
+    else if (v->col == 0) {
         v->col_step = 1;
-        v->col = 1;
+        //v->col = 1;
     }
 }
 
