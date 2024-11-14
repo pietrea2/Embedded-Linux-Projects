@@ -6,7 +6,7 @@ video:
 	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
 part6: part6.c
-	gcc -g -Wall -o part6 part6.c
+	gcc -g -Wall -o part6 part6.c -lintelfpgaup
 
 .PHONY:	clean all
 
