@@ -228,10 +228,9 @@ static void __exit stop_video(void){
 	wait_for_vsync(pixel_ctrl_ptr);
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
+    
     /* unmap the physical-to-virtual mappings */
     iounmap (LW_virtual);
-    //iounmap ((void *) pixel_buffer);
-    //iounmap ((void *) back_pixel_buffer);
     iounmap ((void *) SDRAM_virtual);
     iounmap ((void *) FPGA_ONCHIP_virtual);
 

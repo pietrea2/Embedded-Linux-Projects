@@ -132,30 +132,24 @@ int main(int argc, char *argv[]) {
     int buffer_num;
 	buffer_num = 0;
 
-    int last_col_1;
-    int last_row_1;
-    int last_col_2;
-    int last_row_2;
-
     while(!stop){
         
         SW_read(&SW_data);
 
         // 1. Clear previous vertices and lines (draw black)
         for (i = 0; i < num_xs; i++) {
-
-            last_col_1 = buffer_num ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
-            last_row_1 = buffer_num ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
-           
-            last_col_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
-            last_row_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
-
-            sprintf (command, "box %d,%d %d,%d %hX\n", last_col_1, last_row_1, (last_col_1 + box_size), (last_row_1 + box_size), 0x0);
-            write (video_FD, command, strlen(command));
-
-            sprintf (command, "line %d,%d %d,%d %hX\n", last_col_1, last_row_1, last_col_2, last_row_2, 0x0);
-            write (video_FD, command, strlen(command));
-            
+            if(!buffer_num){
+                sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, (vertexes[i].last_col_buf0 + box_size), (vertexes[i].last_row_buf0 + box_size), 0x0);
+                write (video_FD, command, strlen(command));
+                sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, vertexes[(i + 1)%num_xs].last_col_buf0, vertexes[(i + 1)%num_xs].last_row_buf0, 0x0);
+                write (video_FD, command, strlen(command));
+            }
+            else{
+                sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, (vertexes[i].last_col_buf1 + box_size), (vertexes[i].last_row_buf1 + box_size), 0x0);
+                write (video_FD, command, strlen(command));
+                sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, vertexes[(i + 1)%num_xs].last_col_buf1, vertexes[(i + 1)%num_xs].last_row_buf1, 0x0);
+                write (video_FD, command, strlen(command));
+            }
         }
 
         // 2. Draw new vertices and lines
@@ -211,7 +205,7 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 4: //KEY2: Increase number of objects
-                if (num_xs < 16){
+                if (num_xs < 25){
                     // Save vertices' initial coordinates as "last" locations (used to clear previous drawing)
                     for ( i = 0; i < num_xs; i++){
                         if (!buffer_num){
@@ -223,9 +217,7 @@ int main(int argc, char *argv[]) {
                             vertexes[i].last_row_buf0 = vertexes[i].row;
                         }
                     }
-
                     for (i = 0; i < (num_xs); i++) {
-
                         // Clear screen of what is stored in both buffers
                         sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, (vertexes[i].last_col_buf0 + box_size), (vertexes[i].last_row_buf0 + box_size), 0x0);
                         write (video_FD, command, strlen(command));
@@ -254,7 +246,6 @@ int main(int argc, char *argv[]) {
                         }
                     }
                     for (i = 0; i < (num_xs); i++) {
-
                         // Clear screen of what is stored in both buffers
                         sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, (vertexes[i].last_col_buf0 + box_size), (vertexes[i].last_row_buf0 + box_size), 0x0);
                         write (video_FD, command, strlen(command));

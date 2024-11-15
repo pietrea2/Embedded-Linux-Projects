@@ -276,7 +276,7 @@ void plot_char(int x, int y, char c){
     
     //Address of pixels:
     //base + 0b000000 0b0000000
-    //base + ( y )( x ) 0
+    //base + ( y )( x )
 
     *(short int *)( back_char_buffer + ( ( (y & 0x3F) << 7 ) | (x & 0x7F) ) ) = c;
 }
