@@ -92,7 +92,7 @@ int main(int argc, char *argv[]) {
 
     sleep(1);
 
-    struct vertex vertexes[NUM_VERTEX_MAX];                 // Init 8 vertex positions and colors (random)
+    struct vertex vertexes[NUM_VERTEX_MAX];                       // Init 8 vertex positions and colors (random)
     int num_xs = NUM_VERTEX;
     size_t i;
     for (i = 0; i < NUM_VERTEX_MAX; i++) {
@@ -132,6 +132,11 @@ int main(int argc, char *argv[]) {
     int buffer_num;
 	buffer_num = 0;
 
+    int last_col_1;
+    int last_row_1;
+    int last_col_2;
+    int last_row_2;
+
     while(!stop){
         
         SW_read(&SW_data);
@@ -139,11 +144,11 @@ int main(int argc, char *argv[]) {
         // 1. Clear previous vertices and lines (draw black)
         for (i = 0; i < num_xs; i++) {
 
-            int last_col_1 = buffer_num ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
-            int last_row_1 = buffer_num ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
+            last_col_1 = buffer_num ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
+            last_row_1 = buffer_num ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
            
-            int last_col_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
-            int last_row_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
+            last_col_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
+            last_row_2 = buffer_num ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
 
             sprintf (command, "box %d,%d %d,%d %hX\n", last_col_1, last_row_1, (last_col_1 + box_size), (last_row_1 + box_size), 0x0);
             write (video_FD, command, strlen(command));
@@ -177,7 +182,7 @@ int main(int argc, char *argv[]) {
         KEY_read(&KEY_data);
         switch ( KEY_data ) {
             case 1: //KEY0: Increase speed of animation
-                if ( speed_count < 10){
+                if ( speed_count < 8){
                     if( speed_count >= 5 ){
                         step_add = step_add + 1;
                     }
@@ -190,20 +195,23 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 2: //KEY1: Decrease speed of animation
-                if ( speed_count > -5 ){
+                if ( speed_count > -2 ){
                     if( speed_count >= 6 ){
                         step_add = step_add - 1;
                     }
                     else{
-                        if(speed_count == 5) ts.tv_nsec = 1000000;
-                        else ts.tv_nsec  = ts.tv_nsec * 2;
+                        if(speed_count == 5) ts.tv_nsec = 16500000;
+                        else{
+                            ts.tv_nsec  = ts.tv_nsec * 2;
+                            if (ts.tv_nsec > 999999999) ts.tv_nsec = 999999999;
+                        }
                     }
                     speed_count--;
                     //printf("Speed count: %d NSec: %d\n", speed_count, ts.tv_nsec);
                 }
                 break;
             case 4: //KEY2: Increase number of objects
-                if (num_xs < 15){
+                if (num_xs < 16){
                     // Save vertices' initial coordinates as "last" locations (used to clear previous drawing)
                     for ( i = 0; i < num_xs; i++){
                         if (!buffer_num){
@@ -217,26 +225,16 @@ int main(int argc, char *argv[]) {
                     }
 
                     for (i = 0; i < (num_xs); i++) {
-                        int q = 0;
-                        int last_col_1 = q ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
-                        int last_row_1 = q ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
-                        int last_col_2 = q ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
-                        int last_row_2 = q ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
 
-                        sprintf (command, "box %d,%d %d,%d %hX\n", last_col_1, last_row_1, (last_col_1 + box_size), (last_row_1 + box_size), 0x0);
+                        // Clear screen of what is stored in both buffers
+                        sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, (vertexes[i].last_col_buf0 + box_size), (vertexes[i].last_row_buf0 + box_size), 0x0);
                         write (video_FD, command, strlen(command));
-                        sprintf (command, "line %d,%d %d,%d %hX\n", last_col_1, last_row_1, last_col_2, last_row_2, 0x0);
+                        sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, vertexes[(i + 1)%num_xs].last_col_buf0, vertexes[(i + 1)%num_xs].last_row_buf0, 0x0);
                         write (video_FD, command, strlen(command));
 
-                        q = 1;
-                        last_col_1 = q ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
-                        last_row_1 = q ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
-                        last_col_2 = q ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
-                        last_row_2 = q ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
-
-                        sprintf (command, "box %d,%d %d,%d %hX\n", last_col_1, last_row_1, (last_col_1 + box_size), (last_row_1 + box_size), 0x0);
+                        sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, (vertexes[i].last_col_buf1 + box_size), (vertexes[i].last_row_buf1 + box_size), 0x0);
                         write (video_FD, command, strlen(command));
-                        sprintf (command, "line %d,%d %d,%d %hX\n", last_col_1, last_row_1, last_col_2, last_row_2, 0x0);
+                        sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, vertexes[(i + 1)%num_xs].last_col_buf1, vertexes[(i + 1)%num_xs].last_row_buf1, 0x0);
                         write (video_FD, command, strlen(command));
                     }
                     num_xs++;
@@ -256,26 +254,16 @@ int main(int argc, char *argv[]) {
                         }
                     }
                     for (i = 0; i < (num_xs); i++) {
-                        int x = 0;
-                        int last_col_1 = x ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
-                        int last_row_1 = x ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
-                        int last_col_2 = x ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
-                        int last_row_2 = x ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
 
-                        sprintf (command, "box %d,%d %d,%d %hX\n", last_col_1, last_row_1, (last_col_1 + box_size), (last_row_1 + box_size), 0x0);
+                        // Clear screen of what is stored in both buffers
+                        sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, (vertexes[i].last_col_buf0 + box_size), (vertexes[i].last_row_buf0 + box_size), 0x0);
                         write (video_FD, command, strlen(command));
-                        sprintf (command, "line %d,%d %d,%d %hX\n", last_col_1, last_row_1, last_col_2, last_row_2, 0x0);
+                        sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, vertexes[(i + 1)%num_xs].last_col_buf0, vertexes[(i + 1)%num_xs].last_row_buf0, 0x0);
                         write (video_FD, command, strlen(command));
 
-                        x = 1;
-                        last_col_1 = x ? vertexes[i].last_col_buf1 : vertexes[i].last_col_buf0;
-                        last_row_1 = x ? vertexes[i].last_row_buf1 : vertexes[i].last_row_buf0;
-                        last_col_2 = x ? vertexes[(i + 1)%num_xs].last_col_buf1 : vertexes[(i + 1)%num_xs].last_col_buf0;
-                        last_row_2 = x ? vertexes[(i + 1)%num_xs].last_row_buf1 : vertexes[(i + 1)%num_xs].last_row_buf0;
-
-                        sprintf (command, "box %d,%d %d,%d %hX\n", last_col_1, last_row_1, (last_col_1 + box_size), (last_row_1 + box_size), 0x0);
+                        sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, (vertexes[i].last_col_buf1 + box_size), (vertexes[i].last_row_buf1 + box_size), 0x0);
                         write (video_FD, command, strlen(command));
-                        sprintf (command, "line %d,%d %d,%d %hX\n", last_col_1, last_row_1, last_col_2, last_row_2, 0x0);
+                        sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, vertexes[(i + 1)%num_xs].last_col_buf1, vertexes[(i + 1)%num_xs].last_row_buf1, 0x0);
                         write (video_FD, command, strlen(command));
                     }
                     num_xs--;
@@ -327,21 +315,17 @@ void set_steps(struct vertex* v, int step){
     //row boundary: 0 <= Y <= 239
     if (v -> row >= (screen_y - box_size) - 1 ) {
         v -> row_step = -1 * step;
-        //v ->row = (screen_y - box_size) - 2;
     }
     else if (v ->row <= 0) {
         v -> row_step = 1 * step;
-        //v ->row = 1;
     }
 
     //col boundary: 0 <= X <= 319
     if (v->col >= (screen_x - box_size) - 1 ) {
         v->col_step = -1 * step;
-        //v->col = (screen_x - box_size) - 2;
     } 
     else if (v->col <= 0) {
         v->col_step = 1 * step;
-        //v->col = 1;
     }
 }
 

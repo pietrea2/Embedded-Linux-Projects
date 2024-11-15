@@ -148,11 +148,11 @@ int main(int argc, char *argv[]) {
     int buffer_num;
 	buffer_num = 0;
 
-    //while(!stop)
-    int b;
-    for(b = 0; b < 30; b++){
+    while(!stop){
+    //int b;
+    //for(b = 0; b < 30; b++){
         
-        sleep(1);
+        //sleep(1);
 
         SW_read(&SW_data);
 
