@@ -58,7 +58,6 @@ static int chardev_video_registered = 0;
 
 
 
-
 /* Code to initialize the video driver */
 static int __init start_video(void){
     
@@ -94,14 +93,13 @@ static int __init start_video(void){
 		    printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
 	}
 
-    pixel_buffer = FPGA_ONCHIP_virtual;         // set front and back pixel buffers (VIRTUAL ADDR)
-    back_pixel_buffer = SDRAM_virtual;
 
-    *(pixel_ctrl_ptr + 0) = FPGA_ONCHIP_BASE;   // set Buffer and Backbuffer Registers (PHYSICAL ADDR)
-    *(pixel_ctrl_ptr + 1) = SDRAM_BASE;
+    if( *(pixel_ctrl_ptr + 1) == SDRAM_BASE ) back_pixel_buffer = (int) SDRAM_virtual;
+	else back_pixel_buffer = (int) FPGA_ONCHIP_virtual;
 
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
+
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
     

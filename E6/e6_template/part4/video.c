@@ -95,14 +95,12 @@ static int __init start_video(void){
 		    printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
 	}
 
-    pixel_buffer = FPGA_ONCHIP_virtual;
-    back_pixel_buffer = SDRAM_virtual;
-
-    *(pixel_ctrl_ptr + 0) = FPGA_ONCHIP_BASE;
-    *(pixel_ctrl_ptr + 1) = SDRAM_BASE;
+    if( *(pixel_ctrl_ptr + 1) == SDRAM_BASE ) back_pixel_buffer = (int) SDRAM_virtual;
+	else back_pixel_buffer = (int) FPGA_ONCHIP_virtual;
 
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
+
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
     

@@ -117,23 +117,14 @@ static int __init start_video(void){
 		    printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
 	}
 
-
-
-
-    pixel_buffer = FPGA_ONCHIP_virtual;         // set front and back pixel buffers (VIRTUAL ADDR)
-    back_pixel_buffer = SDRAM_virtual;
-
     back_char_buffer = CHAR_virtual;            // set back char buffer (VIRTUAL ADDR)
 
-
-    *(pixel_ctrl_ptr + 0) = FPGA_ONCHIP_BASE;   // set PIXEL Buffer and Backbuffer Registers (PHYSICAL ADDR)
-    *(pixel_ctrl_ptr + 1) = SDRAM_BASE;
-
-    *(char_ctrl_ptr + 0) = FPGA_CHAR_BASE;      // set CHAR Buffer and Backbuffer Registers (PHYSICAL ADDR)
-    *(char_ctrl_ptr + 1) = FPGA_CHAR_BASE;
-
+    if( *(pixel_ctrl_ptr + 1) == SDRAM_BASE ) back_pixel_buffer = (int) SDRAM_virtual;
+	else back_pixel_buffer = (int) FPGA_ONCHIP_virtual;
+    
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
+
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
 
@@ -171,8 +162,8 @@ void wait_for_vsync(volatile int * pixel_ctrl_ptr){
 void clear_screen(){
 
     size_t x, y;
-    for ( x = 0; x <= resolution_x; x++){
-        for ( y = 0; y <= resolution_y; y++){
+    for ( x = 0; x < resolution_x; x++){
+        for ( y = 0; y < resolution_y; y++){
             plot_pixel(x, y, 0x0);
         }
     }
@@ -266,8 +257,8 @@ void get_char_screen_specs(volatile int * char_ctrl_ptr){
 void clear_text(void){
 
     size_t x, y;
-    for ( x = 0; x <= char_res_x; x++){
-        for ( y = 0; y <= char_res_y; y++){
+    for ( x = 0; x < char_res_x; x++){
+        for ( y = 0; y < char_res_y; y++){
             plot_char(x, y, ' ');
         }
     }
@@ -292,6 +283,14 @@ void draw_text(int x, int y, char *string){
     }
 }
 
+void draw_text_black(int x, int y, int len){
+
+    int i;
+    for (i = 0; i < len; i++) {
+        plot_char( (x + i), y, ' ' );
+    }
+}
+
 
 static void __exit stop_video(void){
     
@@ -299,6 +298,7 @@ static void __exit stop_video(void){
 	wait_for_vsync(pixel_ctrl_ptr);
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
+    
     clear_text();
 
     /* unmap the physical-to-virtual mappings */
@@ -363,7 +363,7 @@ static ssize_t device_write_VIDEO(struct file *filp, const char *buffer, size_t 
     *   Parse input
     */
     int x,y;
-    int x1,y1,x2,y2;
+    int x1,y1,x2,y2, len;
     short int color;
     char text_string[30];
     

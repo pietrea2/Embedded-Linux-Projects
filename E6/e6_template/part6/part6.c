@@ -89,12 +89,13 @@ int main(int argc, char *argv[]) {
     int a;
     for(a = 0; a < 2; a++){                             // Clear both VGA pixel buffers
         sprintf(command, "clear");
-        write(video_FD, command, sizeof(command));      
+        write(video_FD, command, sizeof(command));     
         sprintf(command, "sync");
         write(video_FD, command, sizeof(command));
     }
+
     sprintf(command, "erase");                          // Clear char buffer
-    write(video_FD, command, sizeof(command));
+    write(video_FD, command, sizeof(command));  
 
     sleep(1);
 
@@ -102,7 +103,7 @@ int main(int argc, char *argv[]) {
     int num_xs = NUM_VERTEX;
     size_t i;
     for (i = 0; i < NUM_VERTEX_MAX; i++) {
-        vertexes[i].row = rand() % (screen_y - box_size);
+        vertexes[i].row = ( rand() % (screen_y - box_size ) ) ;
         vertexes[i].col = rand() % (screen_x - box_size);
         vertexes[i].col_step = rand() % 2 ? 1 : -1;
         vertexes[i].row_step = rand() % 2 ? 1 : -1;
@@ -131,9 +132,10 @@ int main(int argc, char *argv[]) {
     write (video_FD, command, strlen(command));
     sprintf (command, "text %d,%d %s\n", 17, 0, frames_str);
     write (video_FD, command, strlen(command));
-
+    
     sprintf(command, "sync");                           // VGA sync
     write(video_FD, command, sizeof(command));
+
 
     // Save vertices' initial coordinates as "last" locations (used to clear previous drawing)
     for ( i = 0; i < NUM_VERTEX_MAX; i++){  
@@ -153,10 +155,8 @@ int main(int argc, char *argv[]) {
         SW_read(&SW_data);
 
         // 1. Clear previous vertices and lines (draw black)
-        sprintf(command, "erase");
-        write(video_FD, command, sizeof(command)); 
-        
         for (i = 0; i < num_xs; i++) {
+
             if(!buffer_num){
                 sprintf (command, "box %d,%d %d,%d %hX\n", vertexes[i].last_col_buf0, vertexes[i].last_row_buf0, (vertexes[i].last_col_buf0 + box_size), (vertexes[i].last_row_buf0 + box_size), 0x0);
                 write (video_FD, command, strlen(command));
@@ -170,7 +170,6 @@ int main(int argc, char *argv[]) {
                 write (video_FD, command, strlen(command));
             }
         }
-        
 
         // 2. Draw new vertices and lines
         for (i = 0; i < num_xs; i++) {
@@ -185,14 +184,10 @@ int main(int argc, char *argv[]) {
 
         // 2.5 Draw Frames Rendered to screen
         frames++;
-        sprintf (command, "text %d,%d %s\n", 0, 0, "Frames");
-        write (video_FD, command, strlen(command));
-        sprintf (command, "text %d,%d %s\n", 7, 0, "rendered:");
-        write (video_FD, command, strlen(command));
         sprintf(frames_str, "%d", frames);
         sprintf (command, "text %d,%d %s\n", 17, 0, frames_str);
         write (video_FD, command, strlen(command));
-
+        
         nanosleep(&ts, NULL); // added shifting delay
         
         // 3. Sync VGA
@@ -202,8 +197,9 @@ int main(int argc, char *argv[]) {
         // buffer switched after sync
 		buffer_num = !buffer_num;
 
-		// Read KEYs and perform following animation features
+        // Read KEYs and perform following animation features
         KEY_read(&KEY_data);
+
         switch ( KEY_data ) {
             case 1: //KEY0: Increase speed of animation
                 if ( speed_count < 8 ){
@@ -235,7 +231,7 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 4: //KEY2: Increase number of objects
-                if (num_xs < 25){
+                if (num_xs < 16){
                     // Save vertices' initial coordinates as "last" locations (used to clear previous drawing)
                     for ( i = 0; i < num_xs; i++){
                         if (!buffer_num){
@@ -259,6 +255,7 @@ int main(int argc, char *argv[]) {
                         sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, vertexes[(i + 1)%num_xs].last_col_buf1, vertexes[(i + 1)%num_xs].last_row_buf1, 0x0);
                         write (video_FD, command, strlen(command));
                     }
+                    
                     num_xs++;
                 }
                 break;
@@ -287,6 +284,7 @@ int main(int argc, char *argv[]) {
                         sprintf (command, "line %d,%d %d,%d %hX\n", vertexes[i].last_col_buf1, vertexes[i].last_row_buf1, vertexes[(i + 1)%num_xs].last_col_buf1, vertexes[(i + 1)%num_xs].last_row_buf1, 0x0);
                         write (video_FD, command, strlen(command));
                     }
+                    
                     num_xs--;
                 }
                 break;
@@ -320,6 +318,7 @@ int main(int argc, char *argv[]) {
     }
     sprintf(command, "erase");
     write(video_FD, command, sizeof(command));
+
 
 
     //close all char driver files

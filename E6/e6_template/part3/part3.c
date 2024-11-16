@@ -34,7 +34,9 @@ int main(int argc, char *argv[]){
 
     sprintf(command, "clear");
     write(video_FD, command, sizeof(command));          // clear VGA display
-
+    sprintf(command, "sync");                           
+    write(video_FD, command, sizeof(command));          // VGA sync
+    
 
     int line_x1 = 59;
     int line_x2 = 259;
@@ -68,7 +70,10 @@ int main(int argc, char *argv[]){
 
     sprintf(command, "clear");                          // clear VGA display
     write(video_FD, command, sizeof(command));
-
+    sprintf(command, "sync");                    
+    write(video_FD, command, sizeof(command));
+    
+    
     close(video_FD);
     return 0;
 }

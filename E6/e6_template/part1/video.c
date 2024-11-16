@@ -80,8 +80,8 @@ static int __init start_video(void){
         printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
     }
 
-    /* Erase the pixel buffer */
-    clear_screen();
+    clear_screen();         /* Erase the pixel buffer */
+    
     return 0;
 }
 
@@ -117,6 +117,7 @@ void plot_pixel(int x, int y, short int color){
 static void __exit stop_video(void){
 
     clear_screen();
+    
     /* unmap the physical-to-virtual mappings */
     iounmap (LW_virtual);
     iounmap ((void *) pixel_buffer);

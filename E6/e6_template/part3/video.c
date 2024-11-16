@@ -88,17 +88,10 @@ static int __init start_video(void){
         printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
     }
 
-    // Create virtual memory access to the SDRAM_BASE
-	SDRAM_virtual = (int) ioremap_nocache(SDRAM_BASE, SDRAM_SPAN);
-	if (SDRAM_virtual == 0){
-		    printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
-	}
-
-    pixel_buffer = FPGA_ONCHIP_virtual;
 	back_pixel_buffer = FPGA_ONCHIP_virtual;		// back buffer is the same as front for this part
     
-    *(pixel_ctrl_ptr + 0) = FPGA_ONCHIP_BASE;       // set both front and back buffers to use the same memory address
-    *(pixel_ctrl_ptr + 1) = FPGA_ONCHIP_BASE;
+    clear_screen();
+	wait_for_vsync(pixel_ctrl_ptr);
 
     clear_screen();
 	wait_for_vsync(pixel_ctrl_ptr);
@@ -126,7 +119,7 @@ void wait_for_vsync(volatile int * pixel_ctrl_ptr){
     }
 
     // set back buffer virtual memory address mto match the address stored in the Backbuffer Register
-	if( *(pixel_ctrl_ptr + 1) == SDRAM_BASE ) back_pixel_buffer = (int) SDRAM_virtual;
+	if( *(pixel_ctrl_ptr + 1) == FPGA_ONCHIP_BASE ) back_pixel_buffer = (int) FPGA_ONCHIP_virtual;
 	else back_pixel_buffer = (int) FPGA_ONCHIP_virtual;
 
 }
@@ -159,8 +152,8 @@ void swap_vars(int *a, int *b) {
 }
 
 //Bresenham’s line-drawing algorithm
-void draw_line(int x0, int x1, int y0, int y1, short int color)
-{
+void draw_line(int x0, int x1, int y0, int y1, short int color){
+
     int deltax;
     int deltay;
     int error ;
@@ -210,10 +203,14 @@ void draw_line(int x0, int x1, int y0, int y1, short int color)
 static void __exit stop_video(void){
     
     clear_screen();
+	wait_for_vsync(pixel_ctrl_ptr);
+    clear_screen();
+	wait_for_vsync(pixel_ctrl_ptr);
+    
     /* unmap the physical-to-virtual mappings */
     iounmap (LW_virtual);
-    iounmap ((void *) pixel_buffer);
-    iounmap ((void *) back_pixel_buffer);
+    iounmap ((void *) SDRAM_virtual);
+    iounmap ((void *) FPGA_ONCHIP_virtual);
 
     /* Remove the device from the kernel */
     misc_deregister(&chardev_video);

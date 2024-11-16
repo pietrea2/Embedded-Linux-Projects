@@ -34,7 +34,7 @@ int main(int argc, char *argv[]){
 
 
     /* Draw a few lines */
-    sprintf (command, "line %d,%d %d,%d %hX\n", 0, screen_y - 1, screen_x - 1, 0, 0xFFE0); // yellow
+    sprintf (command, "line %d,%d %d,%d %hX\n", 0, screen_y - 1, screen_x - 1, 0, 0xFFE0);        // yellow
     write (video_FD, command, strlen(command));
 
     sprintf (command, "line %d,%d %d,%d %hX\n", 0, screen_y - 1, (screen_x >> 1) - 1, 0, 0x07FF); // cyan

@@ -88,6 +88,7 @@ int main(int argc, char *argv[]) {
 
     sprintf(command, "sync");                       // VGA sync
     write(video_FD, command, sizeof(command));
+    
 
     // save this last col for both buffers
     for ( i = 0; i < num_xs; i++){  

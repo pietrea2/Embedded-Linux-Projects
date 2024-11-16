@@ -45,7 +45,7 @@ int main(int argc, char *argv[]){
         } 
     }
 
-    (void) getchar ();       // wait for user to press return
+    (void) getchar ();                                  // wait for user to press return
 
     /*
     *   Color all pixels of the screen to green

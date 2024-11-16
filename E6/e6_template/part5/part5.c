@@ -205,7 +205,7 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             case 4: //KEY2: Increase number of objects
-                if (num_xs < 25){
+                if (num_xs < 16){
                     // Save vertices' initial coordinates as "last" locations (used to clear previous drawing)
                     for ( i = 0; i < num_xs; i++){
                         if (!buffer_num){
