@@ -195,14 +195,14 @@ void ADXL345_REG_MULTI_READ(uint8_t address, uint8_t values[], uint8_t len) {
 // Initialize the ADXL345 chip
 void ADXL345_Init() {
 
-    // +- 16g range, full resolution
-    ADXL345_REG_WRITE(ADXL345_REG_DATA_FORMAT, XL345_RANGE_16G | XL345_FULL_RESOLUTION);
+    // stop measure
+    ADXL345_REG_WRITE(ADXL345_REG_POWER_CTL, XL345_STANDBY);
+    
+    // +- 16g range, 10 bit resolution
+    ADXL345_REG_WRITE(ADXL345_REG_DATA_FORMAT, XL345_RANGE_16G | XL345_10BIT);
     
     // Output Data Rate: 12.5 Hz
     ADXL345_REG_WRITE(ADXL345_REG_BW_RATE, XL345_RATE_12_5);
-    
-    // stop measure
-    ADXL345_REG_WRITE(ADXL345_REG_POWER_CTL, XL345_STANDBY);
     
     // start measure
     ADXL345_REG_WRITE(ADXL345_REG_POWER_CTL, XL345_MEASURE);
@@ -316,6 +316,16 @@ bool ADXL345_IsDataReady(void){
 
 }
 
+// Return true if there was activity since the last read (checks ACTIVITY bit).
 bool ADXL345_WasActivityUpdated(void){
+
+	bool bReady = false;
+    uint8_t data8;
+    
+    ADXL345_REG_READ(ADXL345_REG_INT_SOURCE,&data8);
+    if (data8 & XL345_ACTIVITY)
+        bReady = true;
+    
+    return bReady;
 
 }
