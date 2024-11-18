@@ -113,17 +113,8 @@ static ssize_t device_read_ACCEL(struct file *filp, char* buffer, size_t length,
 
     int16_t XYZ_data[3];
     
-    int act;
-    if(ADXL345_WasActivityUpdated()){
-        act = 1;
-    }
-    else act = 0;
-
     ADXL345_XYZ_Read(XYZ_data);
     
-    printk("%d\n", ADXL345_WasActivityUpdated());
-
-    //while ( !ADXL345_IsDataReady() ){}
     if(sprintf(chardev_read, "%d %d %d %d %d\n", ADXL345_WasActivityUpdated(), XYZ_data[0], XYZ_data[1], XYZ_data[2], mg_per_lsb_char) < 0 ){
         printk(KERN_ERR "Error: copy_to_user unsuccessful");
     }
