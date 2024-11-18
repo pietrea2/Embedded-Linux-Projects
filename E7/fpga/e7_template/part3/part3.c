@@ -35,7 +35,7 @@ int main(void)
     }
     accel_init();
     accel_calibrate();
-
+    
     while (1)
     {
         x_avg = 0;
