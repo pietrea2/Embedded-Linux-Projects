@@ -13,7 +13,7 @@
 
 void *LW_virtual;   // used to access FPGA light-weight bridge
 volatile int * pixel_ctrl_ptr; // virtual address of pixel buffer controller
-int * back_pixel_buffer; // backbuffer
+volatile int * back_buffer; // backbuffer
 int * pixel_buffer;   // used for virtual address of pixel buffer
 int resolution_x, resolution_y; // VGA screen size 
 
@@ -78,15 +78,14 @@ static int __init start_video(void){
     if (pixel_buffer == 0)
         printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
 
-    back_pixel_buffer = (int *)ioremap_nocache(SDRAM_BASE, SDRAM_SPAN);
-    if (back_pixel_buffer == 0)
+    back_buffer = (int *)ioremap_nocache(SDRAM_BASE, SDRAM_SPAN);
+    if (back_buffer == 0)
         printk(KERN_ERR "Error: ioremap_nocache returned NULL\n");
     
     *(pixel_ctrl_ptr + 1) = SDRAM_BASE;
     wait_for_vsync(pixel_ctrl_ptr);
     *(pixel_ctrl_ptr + 1) = FPGA_ONCHIP_BASE;
     wait_for_vsync(pixel_ctrl_ptr);
-    
     /* Erase the pixel buffer */
     
     
@@ -100,18 +99,15 @@ void get_screen_specs(volatile int * pixel_ctrl_ptr){
 }
 
 void wait_for_vsync(volatile int * pixel_ctrl_ptr){
+    printk(KERN_INFO "front buffer : %X, back buffer : %X\n", *pixel_ctrl_ptr, *(pixel_ctrl_ptr + 1));
     volatile int status;
-    int *temp;
     *pixel_ctrl_ptr = 1;
     status = *(pixel_ctrl_ptr + 3);
     while ((status & 0x01) != 0)
     {
         status = *(pixel_ctrl_ptr + 3);
     }
-    temp = back_pixel_buffer;
-    back_pixel_buffer = pixel_buffer;
-    pixel_buffer = temp;
-    // back_pixel_buffer = *(pixel_ctrl_ptr + 1);
+    // back_buffer = *(pixel_ctrl_ptr + 1);
 }
 
 
@@ -128,11 +124,10 @@ void clear_screen(){
             plot_pixel(x, y, 0x0);
         }
     }
-    wait_for_vsync(pixel_ctrl_ptr);
 }
 
 void plot_pixel(int x, int y, short int color){
-    *(short int *)((void *)back_pixel_buffer + (((x & 0x1FF) | ((y& 0xFF) << 9)) << 1 )) = color;
+    *(short int *)((void *)back_buffer + (((x & 0x1FF) | ((y& 0xFF) << 9)) << 1 )) = color;
 }
 
 //Function to swap 2 variable values (in draw_line function)
@@ -145,14 +140,8 @@ void s(int *a, int *b) {
 //Bresenham’s line-drawing algorithm
 void draw_line(int x0, int x1, int y0, int y1, short int color)
 {
-    int deltax;
-    int deltay;
-    int error ;
-    int y;
-    int x;
-    int is_steep;
-    int y_step;
-    is_steep = ABS(y1 - y0) > ABS(x1 - x0);
+
+    int is_steep = ABS(y1 - y0) > ABS(x1 - x0);
 
     if (is_steep)
     {
@@ -167,15 +156,16 @@ void draw_line(int x0, int x1, int y0, int y1, short int color)
     }
 
     //define vars used for Bresenham's algorithm
-    deltax = x1 - x0;
-    deltay = ABS(y1 - y0);
-    error = -(deltax / 2);
-    y = y0;
+    int deltax = x1 - x0;
+    int deltay = ABS(y1 - y0);
+    int error = -(deltax / 2);
+    int y = y0;
+    int x;
 
     // if(deltay <= 1) c = '-';        // draw a - char when line is very horizontal (to make it look smoother)
 
     //calc if line has positive or negative slope
-    
+    int y_step;
     if (y0 < y1)
         y_step = 1;
     else
@@ -209,7 +199,7 @@ static void __exit stop_video(void){
     /* unmap the physical-to-virtual mappings */
     iounmap (LW_virtual);
     iounmap ((void *) pixel_buffer);
-    iounmap ((void *) back_pixel_buffer);
+    iounmap ((void *) back_buffer);
 
     /* Remove the device from the kernel */
     misc_deregister(&chardev_video);
@@ -226,9 +216,10 @@ static int device_release(struct inode *inode, struct file *file){
 
 static ssize_t device_read(struct file *filp, char* buffer,
     size_t length, loff_t *offset) {
-    size_t bytes;
+        /* TODO */
+
     sprintf(chardev_read, "%d %d\n",resolution_x, resolution_y);
-    
+    size_t bytes;
     bytes = strlen(chardev_read) - (*offset); // how many bytes not yet sent?
     bytes = bytes > length ? length : bytes;     // too much to send all at once?
 
@@ -243,10 +234,10 @@ static ssize_t device_read(struct file *filp, char* buffer,
 static ssize_t device_write(struct file *filp, const char 
     *buffer, size_t length, loff_t *offset) {
     size_t bytes;
+    bytes = length;
     int x,y;
     int x1,y1,x2,y2;
     short int color;
-    bytes = length;
     if (bytes > MAX_SIZE - 1)    // can copy all at once, or not?
         bytes = MAX_SIZE - 1;
     if (copy_from_user (chardev_video_msg, buffer, bytes) != 0)

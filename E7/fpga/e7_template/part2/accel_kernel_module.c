@@ -44,7 +44,6 @@ static struct miscdevice chardev_accel = {
 #define MAX_SIZE 300                         // we assume that no message will be longer than this
 static char chardev_accel_msg[MAX_SIZE];     // the character array that can be read
 static char chardev_read[MAX_SIZE];          // the character array that would be writen on
-static char chardev_write[MAX_SIZE];          // the character array that would be writen on
 static int chardev_accel_registered = 0;
 
 
@@ -113,117 +112,7 @@ static int device_release_ACCEL(struct inode *inode, struct file *file){
 }
 
 static ssize_t device_write_ACCEL(struct file *filp, const char* buffer, size_t length, loff_t *offset) {
-    size_t bytes;
-    bytes = length;
-    uint8_t f, g;
-    uint8_t r;
-    if (bytes > MAX_SIZE - 1)    // can copy all at once, or not?
-        bytes = MAX_SIZE - 1;
-    if (copy_from_user (chardev_write, buffer, bytes) != 0)
-        printk (KERN_ERR "Error: copy_from_user unsuccessful");
-    chardev_write[bytes] = '\0';    // NULL terminate
-    // Note: we do NOT update *offset; we just copy the data into chardev_LEDR_msg
-    if ( !strncmp(chardev_write, "device", 6) ) {
-        uint8_t accel_id;
-        ADXL345_REG_READ(0x00, &accel_id);
-        printk(KERN_INFO "ADXL345 device id = %X\n",accel_id);
-    } else if ( !strncmp(chardev_write, "init", 4)){
-        printk(KERN_INFO "Re-initializing the device...\n");
-        ADXL345_Init();
-    } else if (!strncmp(chardev_write, "calibrate", 9)) {
-        printk(KERN_INFO "Calibrating the device...\n");
-        ADXL345_Calibrate();
-    } else if (sscanf(chardev_write,"format %hhu %hhu",&f, &g) == 2) {
-        uint8_t format;
-        uint8_t range;
-        if (f == 0){
-            format = XL345_10BIT;
-        } else if (f == 1){
-            format = XL345_FULL_RESOLUTION;
-        } else {
-            printk(KERN_ERR "Wrong Data Format!!\n");
-            return bytes;
-        }
-
-        if (g == 2){
-            range = XL345_RANGE_2G;
-        } else if (g == 4){
-            range = XL345_RANGE_4G;
-        } else if (g == 8){
-            range = XL345_RANGE_8G;
-        } else if (g == 16){
-            range = XL345_RANGE_16G;
-        } else {
-            printk(KERN_ERR "Wrong Data Format!!\n");
-            return bytes;
-        }
-        printk(KERN_INFO "Changing device format and range...\n");
-        ADXL345_REG_WRITE(ADXL345_REG_DATA_FORMAT, range | format);
-    } else if (sscanf(chardev_write, "rate %hhu",&r)) {
-        /*
-        *   NEVER DO FLOATING POINT OPERATIONS IN KERNEL SPACE !!!!!
-        */
-       
-        uint8_t output_rate;
-        // if (r == 0.1) {
-        //     output_rate = XL345_RATE_0_10;
-        // }
-        // else if (r == 0.2) {
-        //     output_rate = XL345_RATE_0_20;
-        // }
-        // else if (r == 0.39) {
-        //     output_rate = XL345_RATE_0_39;
-        // }
-        // else if (r == 0.78) {
-        //     output_rate = XL345_RATE_0_78;
-        // }
-        if (r == 1) {
-            output_rate = XL345_RATE_1_56;
-        }
-        else if (r == 3) {
-            output_rate = XL345_RATE_3_13;
-        }
-        else if (r == 6) {
-            output_rate = XL345_RATE_6_25;
-        }
-        else if ( r == 12) {
-            output_rate = XL345_RATE_12_5;
-        }
-        else if (r == 25) {
-            output_rate = XL345_RATE_25;
-        }
-        else if (r == 50) {
-            output_rate = XL345_RATE_50;
-        }
-        else if (r == 100) {
-            output_rate = XL345_RATE_100;
-        }
-        else if (r == 200) {
-            output_rate = XL345_RATE_200;
-        }
-        else if (r == 400) {
-            output_rate = XL345_RATE_400;
-        }
-        else if (r == 800) {
-            output_rate = XL345_RATE_800;
-        }
-        else if (r == 1600) {
-            output_rate = XL345_RATE_1600;
-        }
-        else if (r == 3200) {
-            output_rate = XL345_RATE_3200;
-        }
-        else {
-            printk(KERN_ERR "Wrong Output Rate !!!\n");
-            return bytes;
-        }
-        printk(KERN_INFO "output rate = %hhu\n", r);
-        ADXL345_REG_WRITE(ADXL345_REG_BW_RATE, output_rate);
-    } else {
-        printk(KERN_ERR "Wrong Command\n");
-    }
-
-    return bytes;
+    
 }
 
 static ssize_t device_read_ACCEL(struct file *filp, char* buffer, size_t length, loff_t *offset) {
