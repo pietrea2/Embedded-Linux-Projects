@@ -10,7 +10,7 @@ int accel_FD = -1;
 
 #define accel_CHAR_DEV "/dev/accel"
 
-//#define ACCEL_BYTES 20
+#define ACCEL_BYTES 20
 #define BUF_SIZE 32
 char accel_buffer[BUF_SIZE];
 

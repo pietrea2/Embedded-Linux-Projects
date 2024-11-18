@@ -203,6 +203,11 @@ void ADXL345_Init() {
     
     // Output Data Rate: 12.5 Hz
     ADXL345_REG_WRITE(ADXL345_REG_BW_RATE, XL345_RATE_12_5);
+
+    ADXL345_REG_WRITE(ADXL345_REG_INT_ENABLE, XL345_ACTIVITY | XL345_INACTIVITY | XL345_DATAREADY);	//enable interrupts
+    ADXL345_REG_WRITE(ADXL345_REG_INT_MAP, XL345_ACTIVITY | XL345_INACTIVITY | XL345_DATAREADY);	//enable interrupts
+    ADXL345_REG_WRITE(ADXL345_REG_INT_SOURCE, XL345_ACTIVITY | XL345_INACTIVITY | XL345_DATAREADY);	//enable interrupts
+
     
     // start measure
     ADXL345_REG_WRITE(ADXL345_REG_POWER_CTL, XL345_MEASURE);
@@ -264,9 +269,13 @@ void ADXL345_Calibrate() {
     // printf("Average X=%d, Y=%d, Z=%d\n", average_x, average_y, average_z);
     
     // Calculate the offsets (LSB 15.6 mg)
+    
     offset_x += ROUNDED_DIVISION(0-average_x, 4);
     offset_y += ROUNDED_DIVISION(0-average_y, 4);
     offset_z += ROUNDED_DIVISION(256-average_z, 4);
+    
+    //int16_t factor = calc_mg_per_lsb(XL345_FULL_RESOLUTION, XL345_RANGE_16G);
+    //calc_offsets(factor, average_x, average_y, average_z, &offset_x, &offset_y, &offset_z);
     
     // printf("Calibration: offset_x: %d, offset_y: %d, offset_z: %d (LSB: 15.6 mg)\n",offset_x,offset_y,offset_z);
     
@@ -318,9 +327,9 @@ bool ADXL345_IsDataReady(void){
 }
 
 // Return true if there was activity since the last read (checks ACTIVITY bit).
-int ADXL345_WasActivityUpdated(void){
+bool ADXL345_WasActivityUpdated(void){
 
-	int bReady = false;
+	bool bReady = false;
     uint8_t data8;
     
     ADXL345_REG_READ(ADXL345_REG_INT_SOURCE,&data8);

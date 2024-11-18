@@ -12,10 +12,8 @@
 // Declare global variables needed to use the accelerometer
 volatile unsigned int * I2C0_ptr; // virtual address for I2C communication
 volatile unsigned int * SYSMGR_ptr; // virtual address for System Manager communication
-int16_t mg_per_lsb;
+volatile int16_t mg_per_lsb_char;
 
-
-/**  implement your part 2 driver here  **/
 
 // Vars and prototypes for a char driver
 #define SUCCESS 0
@@ -41,7 +39,7 @@ static struct miscdevice chardev_accel = {
     .mode = 0666
 };
 
-#define MAX_SIZE 256                         // we assume that no message will be longer than this
+#define MAX_SIZE 300                         // we assume that no message will be longer than this
 static char chardev_accel_msg[MAX_SIZE];     // the character array that can be read
 static char chardev_read[MAX_SIZE];          // the character array that would be writen on
 static int chardev_accel_registered = 0;
@@ -73,7 +71,7 @@ static int __init start_accel(void) {
     Pinmux_Config();
     I2C0_Init();
 
-    mg_per_lsb = calc_mg_per_lsb(XL345_10BIT, XL345_RANGE_16G);
+    mg_per_lsb_char = calc_mg_per_lsb(XL345_10BIT, XL345_RANGE_16G);
 
     uint8_t accel_id;
     ADXL345_REG_READ(0x00, &accel_id);
@@ -82,9 +80,12 @@ static int __init start_accel(void) {
         ADXL345_Calibrate();
     }
 
+
     return 0;
 
 }
+
+
 
 static void __exit stop_accel(void) {
 
@@ -110,14 +111,22 @@ static int device_release_ACCEL(struct inode *inode, struct file *file){
 
 static ssize_t device_read_ACCEL(struct file *filp, char* buffer, size_t length, loff_t *offset) {
 
-    int16_t XYZ[3];
-    int R;
+    int16_t XYZ_data[3];
+    
+    int act;
+    if(ADXL345_WasActivityUpdated()){
+        act = 1;
+    }
+    else act = 0;
 
-    while ( !ADXL345_IsDataReady() ){}
+    ADXL345_XYZ_Read(XYZ_data);
+    
+    printk("%d\n", ADXL345_WasActivityUpdated());
 
-    ADXL345_XYZ_Read(XYZ);
-    R = ADXL345_WasActivityUpdated();
-    sprintf(chardev_read, "%d %d %d %d %d\n", R, XYZ[0]*mg_per_lsb, XYZ[1]*mg_per_lsb, XYZ[2]*mg_per_lsb, mg_per_lsb);
+    //while ( !ADXL345_IsDataReady() ){}
+    if(sprintf(chardev_read, "%d %d %d %d %d\n", ADXL345_WasActivityUpdated(), XYZ_data[0], XYZ_data[1], XYZ_data[2], mg_per_lsb_char) < 0 ){
+        printk(KERN_ERR "Error: copy_to_user unsuccessful");
+    }
 
     size_t bytes;
     bytes = strlen(chardev_read) - (*offset);    // how many bytes not yet sent?
