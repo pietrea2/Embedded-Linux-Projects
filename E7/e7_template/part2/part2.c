@@ -30,7 +30,7 @@ int main(void){
             continue;
         }
         else{
-            if(R) printf("X = %d, Y = %d, Z = %d\n", x*scale_factor, y*scale_factor, z*scale_factor);
+            printf("X = %d, Y = %d, Z = %d\n", x*scale_factor, y*scale_factor, z*scale_factor);
         }
     
         usleep(100000);
