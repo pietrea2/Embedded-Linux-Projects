@@ -73,12 +73,13 @@ static int __init start_accel(void) {
     Pinmux_Config();
     I2C0_Init();
 
+    mg_per_lsb = calc_mg_per_lsb(XL345_10BIT, XL345_RANGE_16G);
+
     uint8_t accel_id;
     ADXL345_REG_READ(0x00, &accel_id);
-    if (devid == 0xE5){
+    if (accel_id == 0xE5){
         ADXL345_Init();
         ADXL345_Calibrate();
-        mg_per_lsb = calc_mg_per_lsb(XL345_10BIT, XL345_RANGE_16G);
     }
 
     return 0;
@@ -110,8 +111,13 @@ static int device_release_ACCEL(struct inode *inode, struct file *file){
 static ssize_t device_read_ACCEL(struct file *filp, char* buffer, size_t length, loff_t *offset) {
 
     int16_t XYZ[3];
+    int R;
+
+    while ( !ADXL345_IsDataReady() ){}
+
     ADXL345_XYZ_Read(XYZ);
-    sprintf(chardev_read, "%d %d %d\n", XYZ[0]*mg_per_lsb, XYZ[1]*mg_per_lsb, XYZ[2]*mg_per_lsb);
+    R = ADXL345_WasActivityUpdated();
+    sprintf(chardev_read, "%d %d %d %d %d\n", R, XYZ[0]*mg_per_lsb, XYZ[1]*mg_per_lsb, XYZ[2]*mg_per_lsb, mg_per_lsb);
 
     size_t bytes;
     bytes = strlen(chardev_read) - (*offset);    // how many bytes not yet sent?

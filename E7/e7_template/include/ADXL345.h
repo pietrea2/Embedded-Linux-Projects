@@ -26,12 +26,14 @@ extern int16_t mg_per_lsb;
 void ADXL345_Init(void);
 void ADXL345_Calibrate(void);
 bool ADXL345_IsDataReady(void);
-bool ADXL345_WasActivityUpdated(void);
+int ADXL345_WasActivityUpdated(void);
 void ADXL345_XYZ_Read(int16_t szData16[3]);
 void ADXL345_IdRead(uint8_t *pId);
 void ADXL345_REG_READ(uint8_t address, uint8_t *value);
 void ADXL345_REG_WRITE(uint8_t address, uint8_t value);
 void ADXL345_REG_MULTI_READ(uint8_t address, uint8_t values[], uint8_t len);
+int16_t calc_mg_per_lsb(uint8_t resolution, uint8_t range);
+
 
 // I2C0 Functions
 void I2C0_Init(void);

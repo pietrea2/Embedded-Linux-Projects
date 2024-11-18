@@ -197,7 +197,7 @@ void ADXL345_Init() {
 
     // stop measure
     ADXL345_REG_WRITE(ADXL345_REG_POWER_CTL, XL345_STANDBY);
-    
+
     // +- 16g range, 10 bit resolution
     ADXL345_REG_WRITE(ADXL345_REG_DATA_FORMAT, XL345_RANGE_16G | XL345_10BIT);
     
@@ -296,6 +296,7 @@ void ADXL345_XYZ_Read(int16_t szData16[3]) {
     szData16[1] = (szData8[3] << 8) | szData8[2];
     szData16[2] = (szData8[5] << 8) | szData8[4];
 
+
 }
 
 // Read the ID register
@@ -317,9 +318,9 @@ bool ADXL345_IsDataReady(void){
 }
 
 // Return true if there was activity since the last read (checks ACTIVITY bit).
-bool ADXL345_WasActivityUpdated(void){
+int ADXL345_WasActivityUpdated(void){
 
-	bool bReady = false;
+	int bReady = false;
     uint8_t data8;
     
     ADXL345_REG_READ(ADXL345_REG_INT_SOURCE,&data8);
