@@ -9,6 +9,10 @@
 
 int R, x, y, z, scale_factor;
 
+volatile sig_atomic_t stop;
+
+void catchSIGINT(int signum);
+
 int main(void){
 
     // Open the character device driver
@@ -17,16 +21,15 @@ int main(void){
         return -1;
     }
 
-    int read_from_char;
-    int x_avg = 0;
-    int y_avg = 0;
-    int z_avg = 0;
-    int c;
-    
-    while(1){
+    // catch SIGINT from ctrl+c, instead of having it abruptly close this program
+    signal(SIGINT, catchSIGINT);
 
-        read_from_char = accel_read(&R, &x, &y, &z, &scale_factor);
-        if ( !read_from_char ) {
+    int read_from_char;
+    
+    while(!stop){
+
+        //read_from_char = accel_read(&R, &x, &y, &z, &scale_factor);
+        if ( !accel_read(&R, &x, &y, &z, &scale_factor) ) {
             continue;
         }
         else{
@@ -34,9 +37,13 @@ int main(void){
         }
     
         usleep(100000);
-        
     }
 
     accel_close();
     return 0;
+}
+
+void catchSIGINT(int signum)
+{
+    stop = 1;
 }

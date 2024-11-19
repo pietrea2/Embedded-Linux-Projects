@@ -10,8 +10,8 @@
 #include "../include/ADXL345.h"
 
 // Declare global variables needed to use the accelerometer
-volatile unsigned int * I2C0_ptr; // virtual address for I2C communication
-volatile unsigned int * SYSMGR_ptr; // virtual address for System Manager communication
+volatile unsigned int * I2C0_ptr;       // virtual address for I2C communication
+volatile unsigned int * SYSMGR_ptr;     // virtual address for System Manager communication
 volatile int16_t mg_per_lsb_char;
 
 
@@ -59,7 +59,7 @@ static int __init start_accel(void) {
         chardev_accel_registered = 1;
     }
 
-    /**  Note: include this code in your __init function  **/
+    
     I2C0_ptr = ioremap_nocache (I2C0_BASE, I2C0_SPAN);
     SYSMGR_ptr = ioremap_nocache (SYSMGR_BASE, SYSMGR_SPAN);
 
@@ -67,6 +67,7 @@ static int __init start_accel(void) {
         printk (KERN_ERR "Error: ioremap_nocache returned NULL!\n");
 
     pass_addrs((unsigned int*) SYSMGR_ptr, (unsigned int*) I2C0_ptr);
+
 
     Pinmux_Config();
     I2C0_Init();
@@ -80,16 +81,13 @@ static int __init start_accel(void) {
         ADXL345_Calibrate();
     }
 
-
     return 0;
-
 }
 
 
 
 static void __exit stop_accel(void) {
 
-    /**  Note: include this code in your __exit function  **/
     iounmap (I2C0_ptr);
     iounmap (SYSMGR_ptr);
     
@@ -98,7 +96,6 @@ static void __exit stop_accel(void) {
         misc_deregister(&chardev_accel);
         printk(KERN_INFO "/dev/%s driver de-registered\n", DEV_NAME_ACCEL);
     }
-
 }
 
 static int device_open_ACCEL(struct inode *inode, struct file *file){
