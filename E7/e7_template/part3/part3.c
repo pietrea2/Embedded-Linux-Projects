@@ -17,15 +17,11 @@
 #define CYAN 				36
 #define WHITE 				37
 // Constants for animation
-#define SCREEN_X			80
-#define SCREEN_Y			24
+#define MAX_X               40
+#define MIN_X              -39
+#define MAX_Y               12
+#define MIN_Y              -11
 
-
-
-#define MAX_X 40
-#define MIN_X -39
-#define MAX_Y 12
-#define MIN_Y -11
 #define AVERAGE_COUNT 2
 int R, x, y, z, scale_factor;
 
@@ -40,13 +36,13 @@ int main(void){
 
     int read_from_char;
     int bubble_x, bubble_y;
-    int prev_bubble_x, prev_bubble_y;
+    bubble_x = 0;
+    bubble_y = 0;
+
     size_t c;
     int x_avg, y_avg, z_avg;
     float run_x_ave, run_y_ave, run_z_ave;
     float a = 0.5;
-    bubble_x = 0;
-    bubble_y = 0;
 
     // catch SIGINT from ctrl+c, instead of having it abruptly close this program
     signal(SIGINT, catchSIGINT);
@@ -70,18 +66,17 @@ int main(void){
 
     while (!stop) {
 
-        
         x_avg = 0;
         y_avg = 0;
         z_avg = 0;
 
+        // Calc average
         for (c = 0; c < AVERAGE_COUNT; c++) {
             read_from_char = accel_read(&R, &x, &y, &z, &scale_factor);
             if (!read_from_char) {
                 continue;
             }
             else{
-                // printf("%d %d\n", x, y);
                 x_avg += x;
                 y_avg += y;
                 z_avg += z;
@@ -92,47 +87,17 @@ int main(void){
         y_avg /= AVERAGE_COUNT;
         z_avg /= AVERAGE_COUNT;
 
+        // Display average x, y, z values on screen
         clear_screen();
         printf("\e[H");
         printf("\e[37mX = %d mg, Y = %d mg, Z = %d mg", x_avg*scale_factor, y_avg*scale_factor, z_avg*scale_factor);
 
-        /*
-        if(x_avg < MAX_X && x_avg > MIN_X){
-            bubble_x = x_avg;
-        }
-        else if(x_avg < MIN_X) bubble_x = MIN_X;
-        else if(x_avg > MAX_X) bubble_x = MAX_X;
-
-        if(y_avg < MAX_Y && y_avg > MIN_Y){
-            bubble_y = y_avg;
-        }
-        else if(y_avg < MIN_Y) bubble_y = MIN_Y;
-        else if(y_avg > MAX_Y) bubble_y = MAX_Y;
-        */
-
-        /*
-        // Running average
-        read_from_char = accel_read(&R, &x, &y, &z, &scale_factor);
-        if (!read_from_char) {            
-            continue;
-        }
-        else{
-            run_x_ave = run_x_ave * a + x * (1 - a);
-            run_y_ave = run_y_ave * a + y * (1 - a);
-            run_z_ave = run_z_ave * a + z * (1 - a);
-        }
-        */
-
+        // Calc Running Average (used for moving bubble)
         run_x_ave = run_x_ave * a + x_avg * (1 - a);
         run_y_ave = run_y_ave * a + y_avg * (1 - a);
         run_z_ave = run_z_ave * a + z_avg * (1 - a);
 
-        /*
-        // Running Ave Version
-        clear_screen();
-        printf ("\e[H");
-        printf("\e[37mX = %d mg, Y = %d mg, Z = %d mg", run_x_ave*scale_factor, run_y_ave*scale_factor, run_z_ave*scale_factor);
-        */
+        // Moving bubble on screen (at its screen limits)
         if(run_x_ave < MAX_X && run_x_ave > MIN_X){
             bubble_x = run_x_ave;
         }
@@ -145,59 +110,27 @@ int main(void){
         else if(run_y_ave < MIN_Y) bubble_y = MIN_Y;
         else if(run_y_ave > MAX_Y) bubble_y = MAX_Y;
 
-        /*
-        if (x_avg > 5 && bubble_x < MAX_X){
-            bubble_x++;
-        }
-        else if (x_avg < -5 && bubble_x > MIN_X){
-            bubble_x--;
-        }
-        else if(x_avg < 5 && x_avg > 0){
-            bubble_x--;
-        }
-        else if(x_avg > -5 && x_avg < 0){
-            bubble_x++;
-        }
-
-
-        if (y_avg > 5 && bubble_y < MAX_Y){
-            bubble_y++;
-        }
-        else if (y_avg < -5 && bubble_y > MIN_Y){
-            bubble_y--;
-        }
-        else if(y_avg < 5 && bubble_y > 0){
-            bubble_y--;
-        }
-        else if(y_avg > -5 && bubble_y > 0){
-            bubble_y--;
-        }
-        */
-
-        //plot_pixel(prev_bubble_x, prev_bubble_y, BLACK, ' ');
         plot_pixel(bubble_x, bubble_y, CYAN, '*');
         usleep(100000);
-        
     }
 
+    // Reset terminal settings
     printf("\e[2J\e[37m\e[?25h\e[H");
     fflush(stdout);
     
-    accel_close();    // close the accelerometer device
+    accel_close();
     return 0;
 }
 
 void clear_screen(void){
-    printf ("\e[2J");                     // clear the screen
+    printf ("\e[2J");
 }
 
-void catchSIGINT(int signum)
-{
+void catchSIGINT(int signum){
     stop = 1;
 }
 
-void plot_pixel(int x, int y, char color, char c)
-{
+void plot_pixel(int x, int y, char color, char c){
     /*
     \e[ccm:    set colour of text chars (cc = attribute)
     \e[yy;xxH : specify row:col on the screen to move cursor to (yy = row, xx = col)
