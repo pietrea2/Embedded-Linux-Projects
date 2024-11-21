@@ -177,7 +177,8 @@ static ssize_t device_write_ACCEL(struct file *filp, const char* buffer, size_t 
         *   NEVER DO FLOATING POINT OPERATIONS IN KERNEL SPACE !!!!!
         */
 
-        int_rate = (int)(r * 100);
+        //int_rate = (int)(r * 100);
+        int_rate = r;
         uint8_t output_rate;
         if (int_rate == 10) {
             output_rate = XL345_RATE_0_10;
@@ -200,31 +201,31 @@ static ssize_t device_write_ACCEL(struct file *filp, const char* buffer, size_t 
         else if (int_rate == 625) {
             output_rate = XL345_RATE_6_25;
         }
-        else if ( int_rate == 1250) {
+        else if ( int_rate == 125) {
             output_rate = XL345_RATE_12_5;
         }
-        else if (int_rate == 2500) {
+        else if (int_rate == 25) {
             output_rate = XL345_RATE_25;
         }
-        else if (int_rate == 5000) {
+        else if (int_rate == 50) {
             output_rate = XL345_RATE_50;
         }
-        else if (int_rate == 10000) {
+        else if (int_rate == 100) {
             output_rate = XL345_RATE_100;
         }
-        else if (int_rate == 20000) {
+        else if (int_rate == 200) {
             output_rate = XL345_RATE_200;
         }
-        else if (int_rate == 40000) {
+        else if (int_rate == 400) {
             output_rate = XL345_RATE_400;
         }
-        else if (int_rate == 80000) {
+        else if (int_rate == 800) {
             output_rate = XL345_RATE_800;
         }
-        else if (int_rate == 160000) {
+        else if (int_rate == 1600) {
             output_rate = XL345_RATE_1600;
         }
-        else if (int_rate == 320000) {
+        else if (int_rate == 3200) {
             output_rate = XL345_RATE_3200;
         }
         else {

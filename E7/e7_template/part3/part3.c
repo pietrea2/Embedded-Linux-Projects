@@ -31,7 +31,6 @@ void catchSIGINT(int signum);
 void plot_pixel(int x, int y, char color, char c);
 void clear_screen(void);
 
-
 int main(void){
 
     int read_from_char;

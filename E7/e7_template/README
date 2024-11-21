@@ -29,3 +29,12 @@ These errors can be ignored.
 
 If you would like to clarify your interpretation of the exercise instructions 
 or provide any additional information to the grader, PLEASE TYPE IT HERE:
+
+Part 3:
+rate R command supports the following data rate values: 0.10, 0.20, 0.39, 0.78, 1.56, 12.5, 25, 50, 100, 200 Hz.
+The user can insert the numbers for R:                    10,   20,   39,   78,  156,  125, 25, 50, 100, 200
+This is because the kenrel has problems scanning floating point inputs unfortunately.
+
+Part 4:
+When user taps the board, the bubble toggles between * and O.
+When the user double taps, the bubble changes to a random colour.
