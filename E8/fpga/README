@@ -1,0 +1,49 @@
+To facilitate accurate marking, your submitted solution must use this template.
+
+To complete each part of the exercise, add your own code to the following files:
+part1: part1.c
+part2: part2.c
+part3: part3.c
+part4: part4.c
+part5: part5.c
+part6: part6.c
+
+
+Note: parts 4-6 require video output; you may use the built-in video driver (located in
+/home/root/Linux_Libraries/drivers) and call the wrapper functions described in the header file
+video.h (in /usr/include/intepfpgaup/).
+
+Note: parts 5 and 6 require reading KEY values and LEDR output.  You may use the built-in
+KEY and LEDR drivers (located in /home/root/Linux_Libraries/drivers/) and call the 
+wrapper functions in KEY.h and LEDR.h (in /usr/include/intelfpgaup/).
+
+Note: parts 5 and 6 require a stopwatch driver.  You may use the provided stopwatch.ko and 
+call the API fuctions in include/stopwatch.h and stopwatch_wrappers.c.
+
+
+Please test your solution using the provided runall.sh script:
+part1: ./runall.sh 1
+part2: ./runall.sh 2 XXXXXXXXXXXXX     (13-bit vector indicating which notes to play)
+part3: ./runall.sh 3 <keyboard path>
+part4: ./runall.sh 4 <keyboard path>
+part5: ./runall.sh 5 <keyboard path>
+part6: ./runall.sh 6 <keyboard path>
+
+Note: you may wish to hard-code your keyboard path into the script while testing
+
+
+To clean all directories and remove all drivers: ./runall clean
+
+
+To submit your solution: ./runall.sh submit 
+The script generates a .tar.bz2 archive. Please upload this
+archive to quercus (only one team member needs to do this).
+
+
+The script may generate errors, for example:
+ERROR: Removing 'timer': No such file or directory
+These errors can be ignored.
+
+
+If you would like to clarify your interpretation of the exercise instructions 
+or provide any additional information to the grader, PLEASE TYPE IT HERE:
