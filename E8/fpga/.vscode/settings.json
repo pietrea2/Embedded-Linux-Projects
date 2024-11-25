@@ -1,5 +1,8 @@
 {
     "files.associations": {
-        "physical.h": "c"
+        "*.rmd": "markdown",
+        "stdio.h": "c",
+        "physical.h": "c",
+        "system_error": "c"
     }
 }

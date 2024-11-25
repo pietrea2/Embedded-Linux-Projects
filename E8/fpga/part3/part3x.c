@@ -30,6 +30,7 @@ double note[13];
 volatile int fd = -1;
 void *LW_virtual;
 cpu_set_t  mask;
+int ffd;
 inline void assignToThisCore(int core_id)
 {
     CPU_ZERO(&mask);
@@ -53,6 +54,8 @@ void audio_thread()
 
     double scale[13] = {MIDC, DFLAT, DNAT, EFLAT, ENAT, FNAT, GFLAT, GNAT, AFLAT, ANAT, BFLAT, BNAT, HIC};
     int nth_sample = 0;
+    // for (note = 0; note < 13 & !stop; note++)
+    // {
     while (1)
     {
         for (nth_sample = 0; nth_sample < SAMPLING_RATE * PLAYING_TIME / 1000 & !stop;)
@@ -67,8 +70,8 @@ void audio_thread()
                         pthread_mutex_lock(&mutex_tone_volume);
                         for (i = 0; i < 13; i++)
                         {
-                            freq_sum += MAX_VOLUME * note[i] * sin(nth_sample * scale[i]);
-                            note[i] /= 1.0001;
+                            freq_sum += MAX_VOLUME / 13 * note[i] * sin(nth_sample * scale[i]);
+                            note[i];
                         }
                         // printf("frrr %lf\n", freq_sum);
                         pthread_mutex_unlock(&mutex_tone_volume);
@@ -84,45 +87,20 @@ void audio_thread()
 }
 
 
-int main(int argc, char *argv[])
-{
+void check_key(void *i){
     assignToThisCore(0);
     struct input_event ev;
-    int ffd, event_size = sizeof(struct input_event);
-    int err;
-    pthread_t tid;
-    // signal(SIGINT, catchSIGINT);
-    
-    if ((fd = open_physical(fd)) == -1)
-        return (-1);
-    else if ((LW_virtual = map_physical(fd, LW_BRIDGE_BASE, LW_BRIDGE_SPAN)) == NULL)
-        return (-1);
-    if ((err = pthread_create(&tid, NULL, &audio_thread, NULL)) != 0)
-        printf("pthread_create failed:[%s]\n", strerror(err));
-
-    // Get the keyboard device
-    if (argv[1] == NULL)
-    {
-        printf("Specify the path to the keyboard device ex./dev/input/by-id/HP-KEYBOARD");
-        return -1;
-    }
-
-    // Open keyboard device
-    if ((ffd = open(argv[1], O_RDONLY | O_NONBLOCK)) == -1)
-    {
-        printf("Could not open %s\n", argv[1]);
-        return -1;
-    }
-
+    int event_size = sizeof(struct input_event);
     while (!stop)
     {
         // Read keyboard
+        pthread_testcancel();
         if (read(ffd, &ev, event_size) < event_size)
         {
             // No event
             continue;
         }
-        if (ev.type == EV_KEY && (ev.value == KEY_PRESSED || ev.value == KEY_RELEASED))
+        if (ev.type == EV_KEY)
         {
 
             printf("Pressed key: 0x%04x\n", (int)ev.code);
@@ -142,9 +120,58 @@ int main(int argc, char *argv[])
             pthread_mutex_unlock(&mutex_tone_volume);
         }
     }
+}
+
+
+int main(int argc, char *argv[])
+{
+    assignToThisCore(0);
+    
+    int ffd = sizeof(struct input_event);
+    int err;
+    pthread_t tid;
+    int i;
+    signal(SIGINT, catchSIGINT);
+    
+    if ((fd = open_physical(fd)) == -1)
+        return (-1);
+    else if ((LW_virtual = map_physical(fd, LW_BRIDGE_BASE, LW_BRIDGE_SPAN)) == NULL)
+        return (-1);
+    if ((err = pthread_create(&tid, NULL, &audio_thread, NULL)) != 0)
+        printf("pthread_create failed:[%s]\n", strerror(err));
+
+    
+    // Get the keyboard device
+    if (argv[1] == NULL)
+    {
+        printf("Specify the path to the keyboard device ex./dev/input/by-id/HP-KEYBOARD");
+        return -1;
+    }
+
+    // Open keyboard device
+    if ((ffd = open(argv[1], O_RDONLY | O_NONBLOCK)) == -1)
+    {
+        printf("Could not open %s\n", argv[1]);
+        return -1;
+    }
+
+    int key_id[13];
+    for ( i = 0; i < 13; i++)
+    {
+        if ((err = pthread_create(&key_id[i], NULL, &check_key, (ssize_t *)i)) != 0)
+            printf("pthread_create failed:[%s]\n", strerror(err));
+    }
     
     pthread_cancel(tid);
+    for ( i = 0; i < 13; i++)
+    {
+        pthread_cancel(key_id[i]);
+    }
     pthread_join(tid, NULL);
+    for ( i = 0; i < 13; i++)
+    {
+        pthread_join(key_id[i], NULL);
+    }
     if (unmap_physical(LW_virtual, LW_BRIDGE_SPAN) != 0)
         printf("ERROR unmapping virtual address mapping");
     close_physical(fd);
