@@ -67,7 +67,7 @@ void audio_thread()
                         pthread_mutex_lock(&mutex_tone_volume);
                         for (i = 0; i < 13; i++)
                         {
-                            freq_sum += MAX_VOLUME * note[i] * sin(nth_sample * scale[i]);
+                            freq_sum += MAX_VOLUME/13 * note[i] * sin(nth_sample * scale[i]);
                             note[i] /= 1.0001;
                         }
                         // printf("frrr %lf\n", freq_sum);
