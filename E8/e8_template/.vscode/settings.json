@@ -1,5 +1,7 @@
 {
     "files.associations": {
-        "physical.h": "c"
+        "physical.h": "c",
+        "address_map_arm.h": "c",
+        "system_error": "c"
     }
 }
