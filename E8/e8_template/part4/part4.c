@@ -32,10 +32,8 @@ void catchSIGINT (int signum);
 static pthread_t tid1, tid2;			// thread IDs
 int set_processor_affinity(unsigned int core);
 pthread_mutex_t mutex_tone_volume;
-pthread_mutex_t mutex_draw_waves;
 double scale[13] = {MIDC, DFLAT, DNAT, EFLAT, ENAT, FNAT, GFLAT, GNAT, AFLAT, ANAT, BFLAT, BNAT, HIC};
-double note[13] = {0};
-double freq_sum;
+double note_vol[13] = {0};
 void *LW_virtual;
 int draw_waves;
 
@@ -57,28 +55,30 @@ void video_thread(){
 
         if(draw_waves){
 
+            draw_waves = 0;     // Reset
+
             // Draw
             video_clear();
             for(x = 0; x < columns-1; x++){
 
                 wave_sum1 = 0;
                 wave_sum2 = 0;
+
                 pthread_mutex_lock(&mutex_tone_volume);
 
                 for (b = 0; b < 13; b++){
-                    wave_sum1 += note[b] * sin(x * scale[b]);
-                    wave_sum2 += note[b] * sin((x+1) * scale[b]);
+                    wave_sum1 += note_vol[b] * sin(x * scale[b]);
+                    wave_sum2 += note_vol[b] * sin((x+1) * scale[b]);
                 }
 
                 pthread_mutex_unlock(&mutex_tone_volume);
+
                 video_line(x, (int)(wave_sum1*25) + (rows/2), x+1, (int)(wave_sum2*25) + (rows/2), video_ORANGE);
             }
             video_show();
-            draw_waves = 0;
+            
         }
     }
-    video_clear();
-    video_show();
 }
 
 
@@ -91,42 +91,44 @@ void audio_thread(){
     // declare and set up address pointer to AUDIO controller
     volatile int *AUDIO_ptr;
     size_t i;
-    freq_sum = 0;
+    double freq_sum = 0;
+    int write;
+    int nth_sample = 0;
 
     AUDIO_ptr = (unsigned int *)(LW_virtual + AUDIO_BASE);
     *AUDIO_ptr |= 0x8;        // Set CW to 1
     *AUDIO_ptr &= 0xFFFFFFF7; // Set CW to 0
-
-    int nth_sample = 0;
 
     while (!stop){
 
         for (nth_sample = 0; nth_sample < (SAMPLING_RATE * PLAYING_TIME / 1000) && !stop; nth_sample++){
 
             pthread_testcancel();
-            int write = 0;
+            write = 0;
 
             while (write == 0 && !stop) {
 
                 if ((*(AUDIO_ptr + FIFOSPACE) & 0x00FF0000) && (*(AUDIO_ptr + FIFOSPACE) & 0xFF000000)){
                     
                     freq_sum = 0;
+
                     pthread_mutex_lock(&mutex_tone_volume);
                     for (i = 0; i < 13; i++){
-                        freq_sum += MAX_VOLUME/13 * note[i] * sin(nth_sample * scale[i]);
-                        note[i] /= 1.0001;
+                        freq_sum += MAX_VOLUME/13 * note_vol[i] * sin(nth_sample * scale[i]);
+                        note_vol[i] /= 1.0001;
                     }
-                
                     pthread_mutex_unlock(&mutex_tone_volume);
+
                     *(AUDIO_ptr + LDATA) = (int)(freq_sum);
                     *(AUDIO_ptr + RDATA) = (int)(freq_sum);
-
                     write = 1;
                 }
             }
         }
     }
 }
+
+
 
 
 int main(int argc, char *argv[]){
@@ -148,6 +150,13 @@ int main(int argc, char *argv[]){
         printf("Error opening /dev/IntelFPGAUP/video\n");
         return -1;
     }
+
+    video_clear();
+    video_show();
+    sleep(0.5);
+    video_clear();
+    video_show();
+
     if ((err = pthread_create(&tid1, NULL, &audio_thread, NULL)) != 0)
         printf("pthread_create failed:[%s]\n", strerror(err));
     if ((err = pthread_create(&tid2, NULL, &video_thread, NULL)) != 0)
@@ -180,21 +189,20 @@ int main(int argc, char *argv[]){
             if (key == 0x002d)
                 break;
             pthread_mutex_lock(&mutex_tone_volume);
-            //pthread_mutex_lock(&mutex_draw_waves);
             if (key > 2 && key < 9){
                 printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-3], Note[key-3]);
                 if(ev.value){
-                    if(key > 2 && key < 5) note[(key-2)*2-1] = 2;
-                    if(key > 5 && key < 9) note[(key-6)*2+6] = 2;
+                    if(key > 2 && key < 5) note_vol[(key-2)*2-1] = 2;
+                    if(key > 5 && key < 9) note_vol[(key-6)*2+6] = 2;
                 }
                 draw_waves = 1;
             }
 			else if (key > 15 && key < 24){
 				printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-10], Note[key-10]);
                 if(ev.value){    
-                    if(key > 15 && key < 19) note[(key-16)*2] = 2;
-                    if(key > 18 && key < 22) note[(key-16)*2-1] = 2;
-                    if(key > 21 && key < 24) note[key-11] = 2;
+                    if(key > 15 && key < 19) note_vol[(key-16)*2] = 2;
+                    if(key > 18 && key < 22) note_vol[(key-16)*2-1] = 2;
+                    if(key > 21 && key < 24) note_vol[key-11] = 2;
                 }
                 draw_waves = 1;
             }
@@ -203,20 +211,24 @@ int main(int argc, char *argv[]){
                 draw_waves = 1;
             }
             pthread_mutex_unlock(&mutex_tone_volume);
-            //pthread_mutex_unlock(&mutex_tone_volume);
         }
     }
-    
+
+    video_clear();
+    video_show();
+    sleep(0.5);
+    video_clear();
+    video_show();
+    video_close();
 
     pthread_cancel(tid1);
     pthread_cancel(tid2);
     pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
-    video_clear();
-    video_show();
-    video_close();
+    
     if (unmap_physical(LW_virtual, LW_BRIDGE_SPAN) != 0)
         printf("ERROR unmapping virtual address mapping");
+
     close_physical(fd);
     close(ffd);
     return 0;
