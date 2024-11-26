@@ -28,11 +28,9 @@ void catchSIGINT (int signum);
 
 pthread_mutex_t mutex_tone_volume;
 double note[13] = {0};
-
 void *LW_virtual;
 
 int set_processor_affinity(unsigned int core);
-
 cpu_set_t  mask;
 inline void assignToThisCore(int core_id);
 
@@ -46,7 +44,6 @@ void audio_thread(){
 
     // declare and set up address pointer to AUDIO controller
     volatile int *AUDIO_ptr;
-    //note[13];
     size_t i;
     double freq_sum = 0;
 
@@ -58,8 +55,6 @@ void audio_thread(){
     int nth_sample = 0;
 
     while (!stop){
-
-        //pthread_testcancel();
 
         for (nth_sample = 0; nth_sample < (SAMPLING_RATE * PLAYING_TIME / 1000) && !stop; nth_sample++){
 
@@ -116,12 +111,9 @@ int main(int argc, char *argv[]){
         printf("Specify the path to the keyboard device ex./dev/input/by-id/HP-KEYBOARD");
         return -1;
     }
-    // Open keyboard device
-    // Testing using:
-    // /dev/input/by-id/usb-CHICONY_HP_USB_Multimedia_Keyboard-event-kbd
-    if ((ffd = open(argv[1], O_RDONLY | O_NONBLOCK)) == -1){
-        printf("Could not open %s\n", argv[1]);
-        return -1;
+    if ((ffd = open(argv[1], O_RDONLY | O_NONBLOCK)) == -1){    // Open keyboard device
+        printf("Could not open %s\n", argv[1]);                 // Testing using:
+        return -1;                                              // /dev/input/by-id/usb-CHICONY_HP_USB_Multimedia_Keyboard-event-kbd
     }
 
 
@@ -141,14 +133,18 @@ int main(int argc, char *argv[]){
             pthread_mutex_lock(&mutex_tone_volume);
             if (key > 2 && key < 9){
                 printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-3], Note[key-3]);
-                if(key > 2 && key < 5) note[(key-2)*2-1] = ev.value;
-                if(key > 5 && key < 9) note[(key-6)*2+6] = ev.value;
+                if(ev.value){
+                    if(key > 2 && key < 5) note[(key-2)*2-1] = 2;
+                    if(key > 5 && key < 9) note[(key-6)*2+6] = 2;
+                }
             }
 			else if (key > 15 && key < 24){
 				printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-10], Note[key-10]);
-                if(key > 15 && key < 19) note[(key-16)*2] = ev.value;
-                if(key > 18 && key < 22) note[(key-16)*2-1] = ev.value;
-                if(key > 21 && key < 24) note[key-11] = ev.value;
+                if(ev.value){    
+                    if(key > 15 && key < 19) note[(key-16)*2] = 2;
+                    if(key > 18 && key < 22) note[(key-16)*2-1] = 2;
+                    if(key > 21 && key < 24) note[key-11] = 2;
+                }
             }
 			else{
 				printf("You %s key code 0x%04x\n", press_type[ev.value], key);

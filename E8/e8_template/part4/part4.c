@@ -15,5 +15,235 @@
 #include "address_map_arm.h"
 #include "video.h"
 #include "defines.h"
+#include <intelfpgaup/video.h> // Include libraries for char device drivers
 
-/**  your part 4 user code here  **/
+#define KEY_RELEASED 0
+#define KEY_PRESSED 1
+#define PLAYING_TIME 2000
+#define video_ORANGE 0xFC00
+
+static const char *const press_type[2] = {"RELEASED", "PRESSED "};
+char *Note[] = {"C#", "D#", " ", "F#", "G#", "A#", "C", "D", "E", "F", "G", "A", "B", "C"};
+char ASCII[] = {'2',  '3',  '4', '5',  '6',  '7',  'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I'};
+
+static volatile sig_atomic_t stop;
+void catchSIGINT (int signum);
+
+static pthread_t tid1, tid2;			// thread IDs
+int set_processor_affinity(unsigned int core);
+pthread_mutex_t mutex_tone_volume;
+pthread_mutex_t mutex_draw_waves;
+double scale[13] = {MIDC, DFLAT, DNAT, EFLAT, ENAT, FNAT, GFLAT, GNAT, AFLAT, ANAT, BFLAT, BNAT, HIC};
+double note[13] = {0};
+double freq_sum;
+void *LW_virtual;
+int draw_waves;
+
+
+
+void video_thread(){
+
+    set_processor_affinity(0);
+
+    int columns, rows, text_cols, text_rows, x, b;
+    double wave_sum1, wave_sum2;
+
+    if( !video_read(&columns, &rows, &text_cols, &text_rows) ) return printf("Error reading from VGA");
+    //printf("VGA columns: %d, Rows: %d", columns, rows);
+
+    while(!stop){
+
+        pthread_testcancel();
+
+        if(draw_waves){
+
+            // Draw
+            video_clear();
+            for(x = 0; x < columns-1; x++){
+
+                wave_sum1 = 0;
+                wave_sum2 = 0;
+                pthread_mutex_lock(&mutex_tone_volume);
+
+                for (b = 0; b < 13; b++){
+                    wave_sum1 += note[b] * sin(x * scale[b]);
+                    wave_sum2 += note[b] * sin((x+1) * scale[b]);
+                }
+
+                pthread_mutex_unlock(&mutex_tone_volume);
+                video_line(x, (int)(wave_sum1*25) + (rows/2), x+1, (int)(wave_sum2*25) + (rows/2), video_ORANGE);
+            }
+            video_show();
+            draw_waves = 0;
+        }
+    }
+    video_clear();
+    video_show();
+}
+
+
+
+
+void audio_thread(){
+
+    set_processor_affinity(1);
+
+    // declare and set up address pointer to AUDIO controller
+    volatile int *AUDIO_ptr;
+    size_t i;
+    freq_sum = 0;
+
+    AUDIO_ptr = (unsigned int *)(LW_virtual + AUDIO_BASE);
+    *AUDIO_ptr |= 0x8;        // Set CW to 1
+    *AUDIO_ptr &= 0xFFFFFFF7; // Set CW to 0
+
+    int nth_sample = 0;
+
+    while (!stop){
+
+        for (nth_sample = 0; nth_sample < (SAMPLING_RATE * PLAYING_TIME / 1000) && !stop; nth_sample++){
+
+            pthread_testcancel();
+            int write = 0;
+
+            while (write == 0 && !stop) {
+
+                if ((*(AUDIO_ptr + FIFOSPACE) & 0x00FF0000) && (*(AUDIO_ptr + FIFOSPACE) & 0xFF000000)){
+                    
+                    freq_sum = 0;
+                    pthread_mutex_lock(&mutex_tone_volume);
+                    for (i = 0; i < 13; i++){
+                        freq_sum += MAX_VOLUME/13 * note[i] * sin(nth_sample * scale[i]);
+                        note[i] /= 1.0001;
+                    }
+                
+                    pthread_mutex_unlock(&mutex_tone_volume);
+                    *(AUDIO_ptr + LDATA) = (int)(freq_sum);
+                    *(AUDIO_ptr + RDATA) = (int)(freq_sum);
+
+                    write = 1;
+                }
+            }
+        }
+    }
+}
+
+
+int main(int argc, char *argv[]){
+
+    volatile int fd = -1;
+    struct input_event ev;
+    int ffd, event_size = sizeof(struct input_event), key;
+    int err;
+    draw_waves = 0;
+
+    stop = 0;
+    signal(SIGINT, catchSIGINT);
+    
+    if ((fd = open_physical(fd)) == -1)
+        return (-1);
+    else if ((LW_virtual = map_physical(fd, LW_BRIDGE_BASE, LW_BRIDGE_SPAN)) == NULL)
+        return (-1);
+    else if ( !video_open() ){
+        printf("Error opening /dev/IntelFPGAUP/video\n");
+        return -1;
+    }
+    if ((err = pthread_create(&tid1, NULL, &audio_thread, NULL)) != 0)
+        printf("pthread_create failed:[%s]\n", strerror(err));
+    if ((err = pthread_create(&tid2, NULL, &video_thread, NULL)) != 0)
+        printf("pthread_create failed:[%s]\n", strerror(err));
+
+    set_processor_affinity(0);
+
+    // Get the keyboard device
+    if (argv[1] == NULL){
+        printf("Specify the path to the keyboard device ex./dev/input/by-id/HP-KEYBOARD");
+        return -1;
+    }
+    if ((ffd = open(argv[1], O_RDONLY | O_NONBLOCK)) == -1){    // Open keyboard device
+        printf("Could not open %s\n", argv[1]);                 // Testing using:
+        return -1;                                              // /dev/input/by-id/usb-CHICONY_HP_USB_Multimedia_Keyboard-event-kbd
+    }
+
+
+
+    while (!stop){
+
+        // Read keyboard
+        if (read(ffd, &ev, event_size) < event_size){
+            continue;
+        }
+        if (ev.type == EV_KEY && (ev.value == KEY_PRESSED || ev.value == KEY_RELEASED)){
+
+            key = (int) ev.code;
+
+            if (key == 0x002d)
+                break;
+            pthread_mutex_lock(&mutex_tone_volume);
+            //pthread_mutex_lock(&mutex_draw_waves);
+            if (key > 2 && key < 9){
+                printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-3], Note[key-3]);
+                if(ev.value){
+                    if(key > 2 && key < 5) note[(key-2)*2-1] = 2;
+                    if(key > 5 && key < 9) note[(key-6)*2+6] = 2;
+                }
+                draw_waves = 1;
+            }
+			else if (key > 15 && key < 24){
+				printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-10], Note[key-10]);
+                if(ev.value){    
+                    if(key > 15 && key < 19) note[(key-16)*2] = 2;
+                    if(key > 18 && key < 22) note[(key-16)*2-1] = 2;
+                    if(key > 21 && key < 24) note[key-11] = 2;
+                }
+                draw_waves = 1;
+            }
+			else{
+				printf("You %s key code 0x%04x\n", press_type[ev.value], key);
+                draw_waves = 1;
+            }
+            pthread_mutex_unlock(&mutex_tone_volume);
+            //pthread_mutex_unlock(&mutex_tone_volume);
+        }
+    }
+    
+
+    pthread_cancel(tid1);
+    pthread_cancel(tid2);
+    pthread_join(tid1, NULL);
+    pthread_join(tid2, NULL);
+    video_clear();
+    video_show();
+    video_close();
+    if (unmap_physical(LW_virtual, LW_BRIDGE_SPAN) != 0)
+        printf("ERROR unmapping virtual address mapping");
+    close_physical(fd);
+    close(ffd);
+    return 0;
+}
+
+
+
+
+
+void catchSIGINT (int signum) {
+    stop = 1;
+}
+
+// Set the current thread’s affinity to the core specified
+int set_processor_affinity(unsigned int core){
+
+    cpu_set_t cpuset;
+    pthread_t current_thread = pthread_self();
+
+    if (core >= sysconf(_SC_NPROCESSORS_ONLN)){
+        printf("CPU Core %d does not exist!\n", core);
+        return-1;
+    }
+    // Zero out the cpuset mask
+    CPU_ZERO(&cpuset);
+    // Set the mask bit for specified core
+    CPU_SET(core, &cpuset);
+
+    return pthread_setaffinity_np(current_thread, sizeof(cpu_set_t), &cpuset);
+}
