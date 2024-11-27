@@ -13,9 +13,9 @@
 #include <linux/input.h>
 #include <pthread.h>
 #include "address_map_arm.h"
-#include "video.h"
+#include "video.h"              // Include libraries for char device drivers
 #include "defines.h"
-#include <intelfpgaup/video.h> // Include libraries for char device drivers
+//#include <intelfpgaup/video.h>
 
 #define KEY_RELEASED 0
 #define KEY_PRESSED 1
