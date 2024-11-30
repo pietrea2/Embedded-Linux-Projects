@@ -58,7 +58,7 @@ void video_thread(){
             draw_waves = 0;     // Reset
 
             // Draw
-            video_clear();
+            video_clear();            
             for(x = 0; x < columns-1; x++){
 
                 wave_sum1 = 0;
@@ -70,12 +70,14 @@ void video_thread(){
                     wave_sum1 += note_vol[b] * sin(x * scale[b]);
                     wave_sum2 += note_vol[b] * sin((x+1) * scale[b]);
                 }
-
+                draw_waves = 0;
+                
                 pthread_mutex_unlock(&mutex_tone_volume);
 
-                video_line(x, (int)(wave_sum1*25) + (rows/2), x+1, (int)(wave_sum2*25) + (rows/2), video_ORANGE);
+                video_line(x, (int)(wave_sum1*14) + (rows/2), x+1, (int)(wave_sum2*14) + (rows/2), video_ORANGE);
             }
             video_show();
+            
             
         }
     }
@@ -153,7 +155,7 @@ int main(int argc, char *argv[]){
 
     video_clear();
     video_show();
-    sleep(0.5);
+    sleep(1);
     video_clear();
     video_show();
 
@@ -195,7 +197,7 @@ int main(int argc, char *argv[]){
                     if(key > 2 && key < 5) note_vol[(key-2)*2-1] = 2;
                     if(key > 5 && key < 9) note_vol[(key-6)*2+6] = 2;
                 }
-                draw_waves = 1;
+                draw_waves++;
             }
 			else if (key > 15 && key < 24){
 				printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-10], Note[key-10]);
@@ -204,10 +206,10 @@ int main(int argc, char *argv[]){
                     if(key > 18 && key < 22) note_vol[(key-16)*2-1] = 2;
                     if(key > 21 && key < 24) note_vol[key-11] = 2;
                 }
-                draw_waves = 1;
+                draw_waves++;
             }
 			else{
-				printf("You %s key code 0x%04x\n", press_type[ev.value], key);
+				//printf("You %s key code 0x%04x\n", press_type[ev.value], key);
                 draw_waves = 1;
             }
             pthread_mutex_unlock(&mutex_tone_volume);
@@ -216,10 +218,9 @@ int main(int argc, char *argv[]){
 
     video_clear();
     video_show();
-    sleep(0.5);
+    sleep(1);
     video_clear();
     video_show();
-    video_close();
 
     pthread_cancel(tid1);
     pthread_cancel(tid2);
@@ -228,7 +229,7 @@ int main(int argc, char *argv[]){
     
     if (unmap_physical(LW_virtual, LW_BRIDGE_SPAN) != 0)
         printf("ERROR unmapping virtual address mapping");
-
+    video_close();
     close_physical(fd);
     close(ffd);
     return 0;

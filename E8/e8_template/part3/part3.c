@@ -132,14 +132,14 @@ int main(int argc, char *argv[]){
                 break;
             pthread_mutex_lock(&mutex_tone_volume);
             if (key > 2 && key < 9){
-                printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-3], Note[key-3]);
+                //printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-3], Note[key-3]);
                 if(ev.value){
                     if(key > 2 && key < 5) note[(key-2)*2-1] = 2;
                     if(key > 5 && key < 9) note[(key-6)*2+6] = 2;
                 }
             }
 			else if (key > 15 && key < 24){
-				printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-10], Note[key-10]);
+				//printf("You %s key %c (note %s)\n", press_type[ev.value], ASCII[key-10], Note[key-10]);
                 if(ev.value){    
                     if(key > 15 && key < 19) note[(key-16)*2] = 2;
                     if(key > 18 && key < 22) note[(key-16)*2-1] = 2;
@@ -147,7 +147,7 @@ int main(int argc, char *argv[]){
                 }
             }
 			else{
-				printf("You %s key code 0x%04x\n", press_type[ev.value], key);
+				//printf("You %s key code 0x%04x\n", press_type[ev.value], key);
             }
             pthread_mutex_unlock(&mutex_tone_volume);
         }

@@ -18,7 +18,6 @@
 #include "video.h"
 #include "KEY.h"
 #include "LEDR.h"
-//#include "HEX.h"
 
 
 #define KEY_RELEASED 0
@@ -88,7 +87,7 @@ void video_thread(){
 
                 pthread_mutex_unlock(&mutex_tone_volume);
 
-                video_line(x, (int)(wave_sum1*20) + (rows/2), x+1, (int)(wave_sum2*20) + (rows/2), video_ORANGE);
+                video_line(x, (int)(wave_sum1*14) + (rows/2), x+1, (int)(wave_sum2*14) + (rows/2), video_ORANGE);
             }
             video_show();
             
@@ -189,7 +188,7 @@ int main(int argc, char *argv[]){
     
     video_clear();
     video_show();
-    sleep(0.5);
+    sleep(1);
     video_clear();
     video_show();
 
@@ -339,7 +338,6 @@ int main(int argc, char *argv[]){
     sleep(0.5);
     video_clear();
     video_show();
-    video_close();
 
     pthread_cancel(tid1);
     pthread_cancel(tid2);
@@ -348,7 +346,10 @@ int main(int argc, char *argv[]){
     
     if (unmap_physical(LW_virtual, LW_BRIDGE_SPAN) != 0)
         printf("ERROR unmapping virtual address mapping");
-
+    video_close();
+    stopwatch_close();
+    LEDR_close();
+    KEY_close();
     close_physical(fd);
     close(ffd);
     return 0;

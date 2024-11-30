@@ -87,7 +87,7 @@ void video_thread(){
 
                 pthread_mutex_unlock(&mutex_tone_volume);
 
-                video_line(x, (int)(wave_sum1*20) + (rows/2), x+1, (int)(wave_sum2*20) + (rows/2), video_ORANGE);
+                video_line(x, (int)(wave_sum1*14) + (rows/2), x+1, (int)(wave_sum2*14) + (rows/2), video_ORANGE);
             }
             video_show();
             
@@ -185,7 +185,7 @@ int main(int argc, char *argv[]){
     
     video_clear();
     video_show();
-    sleep(0.5);
+    sleep(1);
     video_clear();
     video_show();
 
@@ -330,23 +330,23 @@ int main(int argc, char *argv[]){
         }
     }
 
-    audio_close();
-    LEDR_close();
-    KEY_close();
-    stopwatch_close();
 
     video_clear();
     video_show();
-    sleep(0.5);
+    sleep(1);
     video_clear();
     video_show();
-    video_close();
 
     pthread_cancel(tid1);
     pthread_cancel(tid2);
     pthread_join(tid1, NULL);
     pthread_join(tid2, NULL);
-    
+
+    video_close();
+    audio_close();
+    LEDR_close();
+    KEY_close();
+    stopwatch_close();    
     close(ffd);
     return 0;
 }

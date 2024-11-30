@@ -14,7 +14,7 @@
 #include "address_map_arm.h"
 #include "defines.h"
 
-#define PLAYING_TIME 2000
+#define PLAYING_TIME 1000
 
 volatile sig_atomic_t stop;
 
