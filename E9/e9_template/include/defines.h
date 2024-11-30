@@ -1,0 +1,13 @@
+#ifndef DEFINES_H
+#define DEFINES_H
+
+#define RES_X 320
+#define RES_Y 240
+#define LOW_THRESHOLD 164
+#define HIGH_THRESHOLD 2048
+#define NUM_SAMPLES RES_X
+#define TRIGGER_DUR 5
+#define TIME_DIV 100
+#define SAMPLING_PERIOD_NS TIME_DIV*1000000/RES_X
+
+#endif
