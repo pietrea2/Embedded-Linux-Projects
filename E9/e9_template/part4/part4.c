@@ -131,7 +131,7 @@ int main(int argc, char *argv[])
     {
         return -1;
     }
-    if (!KEY_open ()){
+    if (!KEY_open()){
         return -1;
     }
     video_clear();
@@ -168,19 +168,21 @@ int main(int argc, char *argv[])
     timer_create(CLOCK_MONOTONIC, NULL, &interval_timer_id);
 
     timer_settime(interval_timer_id, 0, &interval_timer_start, NULL);
-
+    *(int *)(LW_virtual + KEY_BASE + 3) = 1;
     while (!stop)
     {
-        KEY_read(&key_val);
-        printf("%d\n", key_val);
-        if (key_val & 0x1){
+        
+        key_val = *(int *)(LW_virtual + KEY_BASE);
+        
+        if (*(int *)(LW_virtual + KEY_BASE) & 0x1){
             sweep_time += 100;
-            fflush(stdout);
-        } else if (key_val & 0x2){
+        } else if (*(int *)(LW_virtual + KEY_BASE) & 0x2){
             sweep_time -= 100;
-             fflush(stdout);
         }
         period = sweep_time * 1000000 / 320;
+        printf("per %d %d\n",*(int *)(LW_virtual + KEY_BASE),  sweep_time);
+        *(int *)(LW_virtual + KEY_BASE + 3) = 1;
+        // usleep(1000 * 100);
     }
     timer_settime(interval_timer_id, 0, &interval_timer_stop, NULL);
     video_clear();
