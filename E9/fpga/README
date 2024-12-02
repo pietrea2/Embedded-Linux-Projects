@@ -1,0 +1,32 @@
+To facilitate accurate marking, your submitted solution must use this template.
+
+To complete each part of the exercise, add your own code to the following files:
+part1: part1.c
+part2: signal_generator.c
+part3: part3.c
+part4: part4.c
+
+NOTE: the template is set up for using the built-in KEY and SW drivers for the
+user code in parts 3 and 4.  You may use memory mapped IO if you prefer.
+
+Please test your solution using the provided runall.sh script:
+part1: ./runall.sh 1
+part2: ./runall.sh 2
+part3: ./runall.sh 3
+part4: ./runall.sh 4
+
+To clean all directories and remove all drivers: ./runall clean
+
+
+To submit your solution: ./runall.sh submit 
+The script generates a .tar.bz2 archive. Please upload this
+archive to quercus (only one team member needs to do this).
+
+
+The script may generate errors, for example:
+ERROR: Removing 'timer': No such file or directory
+These errors can be ignored.
+
+
+If you would like to clarify your interpretation of the exercise instructions 
+or provide any additional information to the grader, PLEASE TYPE IT HERE:

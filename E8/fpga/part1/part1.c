@@ -13,13 +13,6 @@
 #include "address_map_arm.h"
 #include "defines.h"
 
-#define PLAYING_TIME 300
-
-volatile sig_atomic_t stop;
-void catchSIGINT (int signum) {
-	stop = 1;
-}
-
 int main(void)
 {
 
@@ -27,38 +20,49 @@ int main(void)
     volatile int *AUDIO_ptr;
     void *LW_virtual;
     int fd = -1;
-    signal(SIGINT, catchSIGINT);
 
     if ((fd = open_physical(fd)) == -1)
         return (-1);
     else if ((LW_virtual = map_physical(fd, LW_BRIDGE_BASE, LW_BRIDGE_SPAN)) == NULL)
         return (-1);
-
+    printf("cock\n");
+    fflush(stdout);
     AUDIO_ptr = (unsigned int *)(LW_virtual + AUDIO_BASE);
-    *AUDIO_ptr |= 0x8;        // Set CW to 1
-    *AUDIO_ptr &= 0xFFFFFFF7; // Set CW to 0
-
+    *AUDIO_ptr = 0x8; // Set CW to 1
+    sleep(1);
+    *AUDIO_ptr = 0x0; // Set CW to 0
+    sleep(1);
+    printf("cock2\n");
+    fflush(stdout);
     double scale[13] = {MIDC, DFLAT, DNAT, EFLAT, ENAT, FNAT, GFLAT, GNAT, AFLAT, ANAT, BFLAT, BNAT, HIC};
     int note;
     int nth_sample = 0;
-    printf("left:%#x right:%#x\n", *(AUDIO_ptr + 1) & 0xFF000000, *(AUDIO_ptr + 1) & 0x00FF0000);
-    for (note = 0; note < 13 & !stop; note++)
+    printf("cock3\n");
+    fflush(stdout);
+    for (note = 0; note < 1; note++)
     {
-        for (nth_sample = 0; nth_sample < SAMPLING_RATE * PLAYING_TIME / 1000 & !stop;)
+
+        // sleep(1);
+        *AUDIO_ptr = 0x8; // Set CW to 1
+        *AUDIO_ptr = 0x0; // Set CW to 0
+        printf("cock\n");
+        fflush(stdout);
+        // Loop thru notes
+        // for(nth_sample = 0; nth_sample < SAMPLING_RATE; nth_sample++){
+        while (1)
         {
-
+            printf("%d \n", *AUDIO_ptr);
+            fflush(stdout);
+            // Wait until space is avail in outgoing fifo (check if WSLC and WSRC is not 0 = empty)
+            while (*(int *)(AUDIO_ptr + FIFOSPACE) & 0x00FF0000 == 0 || *(int *)(AUDIO_ptr + FIFOSPACE) & 0xFF000000 == 0)
             {
-                int write = 0;
-                while (write == 0 & !stop)
-                    if ((*(AUDIO_ptr + FIFOSPACE) & 0x00FF0000) && (*(AUDIO_ptr + FIFOSPACE) & 0xFF000000))
-                    {
-                        *(AUDIO_ptr + LDATA) = (int)(MAX_VOLUME * sin(nth_sample * scale[note]));
-                        *(AUDIO_ptr + RDATA) = (int)(MAX_VOLUME * sin(nth_sample * scale[note]));
-
-                        nth_sample++;
-                        write = 1;
-                    }
             }
+
+            *(AUDIO_ptr + LDATA) = (int)(0);
+            *(AUDIO_ptr + RDATA) = (int)(0);
+
+            nth_sample++;
+            sleep(1);
         }
     }
 
