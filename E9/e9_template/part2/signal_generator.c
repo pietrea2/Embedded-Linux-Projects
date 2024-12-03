@@ -48,7 +48,7 @@ void update_frequency(void) {
 
     if( (cur_SW_9_6_value != SW_9_6_value) || first ){
 
-        timer_count_val = (cur_SW_9_6_value + 1) * INITIAL_TIMER;   // Calc new count value for timer
+        timer_count_val = (INITIAL_TIMER / (cur_SW_9_6_value + 1)) / 2;   // Calc new count value for timer
 
         *(timer_ptr + 1) = 0x00000008;                              // Stop timer
         *(timer_ptr + 2) = timer_count_val & 0x0000FFFF;            // Load new count value

@@ -13,7 +13,6 @@
 #include "SW.h"
 #include "KEY.h"
 
-// #include "SW.h"
 #define SAMPLES 320
 #define video_BYTES 8
 /** timer data structures **/

@@ -1,170 +1,156 @@
 #include <stdio.h>
 #include <signal.h>
-#include <stdlib.h>
 #include <time.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <unistd.h>
 #include "address_map_arm.h"
 #include "physical.h"
 #include "defines.h"
 #include "video.h"
 #include "SW.h"
 
-// #include "SW.h"
-#define SAMPLES 320
-#define video_BYTES 8
+#define video_ORANGE 0xFC00
+#define video_PINK   0xFC18
+volatile int *ADC_ptr;
+volatile int samples_collected;
+float samples[320];
+float sample;
+
+volatile sig_atomic_t stop;
+
+void catchSIGINT (int signum) {
+	stop = 1;
+}
+
 /** timer data structures **/
 struct itimerspec interval_timer_start = {
-    .it_interval = {.tv_sec = 0, .tv_nsec = SAMPLING_PERIOD_NS},
-    .it_value = {.tv_sec = 0, .tv_nsec = SAMPLING_PERIOD_NS}};
+    .it_interval = {.tv_sec=0,.tv_nsec=SAMPLING_PERIOD_NS},
+    .it_value = {.tv_sec=0,.tv_nsec=SAMPLING_PERIOD_NS}};
 
-struct itimerspec interval_timer_stop = {
-    .it_interval = {.tv_sec = 0, .tv_nsec = 0},
-    .it_value = {.tv_sec = 0, .tv_nsec = 0}};
+struct itimerspec interval_timer_stop  = {
+    .it_interval = {.tv_sec=0,.tv_nsec=0},
+    .it_value = {.tv_sec=0,.tv_nsec=0}};
 
 timer_t interval_timer_id;
 
-volatile sig_atomic_t stop;
-volatile int samples;
-volatile int x;
-volatile float sample1;
-volatile float sample2;
-volatile int *ADC_ptr;
-volatile int rising;
-volatile int start_capture;
-void *LW_virtual;
-int video_FD;             // file descriptor
-char buffer[video_BYTES]; // buffer for data read from /dev/video
-char command[64];         // buffer for commands written to /dev/video
-
-int fd = -1;
-
-void catchSIGINT(int signum)
-{
-    stop = 1;
-    
-}
-
 /** timeout handler **/
-void timeout_handler(int signo)
-{
+void timeout_handler(int signo) {
 
-    /** please complete this function **/
-    if(stop){
-        timer_settime(interval_timer_id, 0, &interval_timer_stop, NULL);
-        video_clear();
-        video_show();
-        video_clear();
-        video_show();
-        return;
+    if( samples_collected < NUM_SAMPLES-1 ){
+        while( (*ADC_ptr & 0x8000) == 0 ){}      // Wait for R = 1
+        sample = *ADC_ptr & 0xFFF;               // Take 12 bit sample
+        sample = sample * 5.0/4095.0;            // Convert to volts
+        samples[samples_collected] = sample; 
+        samples_collected++;
     }
-    while ((*ADC_ptr & 0x8000) == 0)
-    {
-    }
-    sample2 = sample1;
-    sample1 = *ADC_ptr & 0xFFF;       // Take 12 bit sample
-    sample1 = sample1 * 5.0 / 4095.0; // Convert to volts
-    sample1 = 150 - (sample1 * 20);
-    // sprintf (command, "pixel %d,%d %hX\n", x, 150 - (sample * 2.5), 0xCCCC);
-    // write(video_FD, command, sizeof(command));
-    // sprintf(command, "sync");                       // VGA sync
-    // write(video_FD, command, sizeof(command));
-    // video_clear();
-    if (!start_capture)
-    {
-        if (abs(sample1 - sample2) < 1 * 20)
-            return;
-        if ((rising & 0x1) && (sample1 - sample2 > 0))
-        {
-            return;
-        }
-        else if (!(rising & 0x1) && (sample1 - sample2 < 0))
-        {
-            return;
-        }
-    }
-    start_capture = 1;
-
-    video_line(x, sample2, x + 1, sample1, 0xCC);
-    video_show();
-    // printf("%.2lf v\n", sample);
-
-    x++;
-    if (x >= SAMPLES)
-    {
-        x = 0;
-        // stop = 1;
-        video_clear();
-        video_show();
-        video_clear();
-        video_show();
-        // timer_settime(interval_timer_id, 0, &interval_timer_stop, NULL);
+    else if( samples_collected == NUM_SAMPLES-1 ){
+        timer_settime(interval_timer_id, 0, &interval_timer_stop, NULL);    // Turn off timer
+        samples_collected = 0;
     }
 
-    // turn off timer
 }
 
-int main(int argc, char *argv[])
-{
+
+int main(int argc, char* argv[]) {
+
+    /**  please complete the main function **/
+    void *LW_virtual;
+    int fd = -1;
+    float trigger_samples[2];
+    int trigger_condition = 0;
+    int switch_read;
+    samples_collected = 0;
+
+    stop = 0;
+    signal(SIGINT, catchSIGINT);
 
     if ((fd = open_physical(fd)) == -1)
         return (-1);
     else if ((LW_virtual = map_physical(fd, LW_BRIDGE_BASE, LW_BRIDGE_SPAN)) == NULL)
         return (-1);
-
-    srand(time(NULL));
-
-    if (!video_open())
-    {
+    if ( !video_open() ){
+        printf("Error opening /dev/IntelFPGAUP/video\n");
         return -1;
     }
-    if (!SW_open())
-    {
+    if ( !SW_open() ){
+        printf("Error opening /dev/IntelFPGAUP/SW\n");
         return -1;
     }
-    video_clear();
-    video_show();
-    video_clear();
-    video_show();
+
     ADC_ptr = (unsigned int *)(LW_virtual + ADC_BASE);
-    *(ADC_ptr + 1) = 1; // Activate AUTO-update
+    *(ADC_ptr + 1) = 1;     // Activate AUTO-update
+    video_clear();          // Clear VGA display
+    video_show();
+    sleep(1);
+    video_clear();
+    video_show();
 
-    /**  please complete the main function **/
-    stop = 0;
-    x = 0;
-    sample1 = sample2 = 150;
-    start_capture = 0;
-    SW_read(&rising);
+
     // Set up the signal handling (version provided in lab instructions)
-    struct sigaction act;
+    /* struct sigaction act;
     sigset_t set;
-    sigemptyset(&set);
-    sigaddset(&set, SIGALRM);
+    sigemptyset (&set);
+    sigaddset (&set, SIGALRM);
     act.sa_flags = 0;
     act.sa_mask = set;
     act.sa_handler = &timeout_handler;
-    sigaction(SIGALRM, &act, NULL);
+    sigaction (SIGALRM, &act, NULL); */
 
     // set up signal handling (shorter version shown in lecture)
     signal(SIGALRM, timeout_handler);
 
     // Create a monotonically increasing timer
+    timer_create (CLOCK_MONOTONIC, NULL, &interval_timer_id);
 
-    timer_create(CLOCK_MONOTONIC, NULL, &interval_timer_id);
-
-    timer_settime(interval_timer_id, 0, &interval_timer_start, NULL);
-
-    while (!stop)
-    {
+    // Read 2 samples from ADC!
+    int a;
+    for(a = 0; a < 2; a++){
+        while( (*ADC_ptr & 0x8000) == 0 ){}     // Read sample from ADC
+        sample = *ADC_ptr & 0xFFF;          
+        sample = sample * 5.0/4095.0;
+        trigger_samples[a] = sample;
     }
-    timer_settime(interval_timer_id, 0, &interval_timer_stop, NULL);
-    video_clear();
-    video_show();
-    video_clear();
-    video_show();
 
-    SW_close();
+
+    while( !stop ){
+
+        while( (*ADC_ptr & 0x8000) == 0 ){}     // Read sample from ADC
+        sample = *ADC_ptr & 0xFFF;          
+        sample = sample * 5.0/4095.0;
+        trigger_samples[0] = trigger_samples[1];
+        trigger_samples[1] = sample;
+
+        SW_read(&switch_read);                  // Check SW and look for trigger: Rising or falling edge of wave
+        trigger_condition = 0;
+        if( switch_read & 0x1 == 1 ){
+            if( trigger_samples[1] - trigger_samples[0] > 1.0 ) trigger_condition = 1;
+        }
+        else {
+            if( trigger_samples[0] - trigger_samples[1] > 1.0 ) trigger_condition = 1;
+        }
+
+        if( trigger_condition ){
+
+            timer_settime(interval_timer_id, 0, &interval_timer_start, NULL);   // 1: Start sample timer
+            while( samples_collected < NUM_SAMPLES-1 ) {}                       // 2: Wait until done collecting samples for sweep
+
+            video_clear();                                                      // 3: Draw sweep
+            for(a = 0; a < RES_X-1; a++){
+                video_line(a, (RES_Y-1) - ((int)samples[a]) * 40, a+1, (RES_Y-1) - ((int)samples[a+1]) * 40, video_PINK);
+            }
+            video_show();
+        }
+    }
+
+    video_clear();
+    video_show();
+    video_clear();
+    video_show();
     video_close();
+    SW_close();
+
+    if (unmap_physical(LW_virtual, LW_BRIDGE_SPAN) != 0){
+        printf("ERROR unmapping virtual address mapping");
+    }
+    close_physical(fd);
+
     return 0;
 }
