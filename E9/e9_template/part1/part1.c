@@ -30,16 +30,16 @@ int main(void){
         return (-1);
 
     ADC_ptr = (unsigned int *)(LW_virtual + ADC_BASE);
-    *(ADC_ptr + 1) = 1;     // Activate AUTO-update
+    *(ADC_ptr + 1) = 1;                             // Activate AUTO-update
 
 
 
     while(!stop){
 
-        while( (*ADC_ptr & 0x8000) == 0 ){}      // Wait for R = 1
+        while( (*ADC_ptr & 0x8000) == 0 ){}         // Wait for R = 1
 
-        sample = *ADC_ptr & 0xFFF;              // Take 12 bit sample
-        sample = sample * 5.0/4095.0;            // Convert to volts
+        sample = *ADC_ptr & 0xFFF;                  // Take 12 bit sample
+        sample = sample * 5.0/4095.0;               // Convert to volts
         printf("%.2lf v\n", sample);
         sleep(1);
     }

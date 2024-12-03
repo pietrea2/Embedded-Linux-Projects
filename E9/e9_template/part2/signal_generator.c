@@ -42,18 +42,18 @@ volatile int first;
 
 void update_frequency(void) {
     
-    switch_value = *switch_ptr;                                     // Read SWs
+    switch_value = *switch_ptr;                                     		// Read SWs
     cur_SW_9_6_value = switch_value >> 6;
-    *ledr_ptr = switch_value;                                       // Display SW value on LEDRs
+    *ledr_ptr = switch_value;                                       		// Display SW value on LEDRs
 
     if( (cur_SW_9_6_value != SW_9_6_value) || first ){
 
-        timer_count_val = (INITIAL_TIMER / (cur_SW_9_6_value + 1)) / 2;   // Calc new count value for timer
+        timer_count_val = (INITIAL_TIMER / (cur_SW_9_6_value + 1)) / 2;   	// Calc new count value for timer
 
-        *(timer_ptr + 1) = 0x00000008;                              // Stop timer
-        *(timer_ptr + 2) = timer_count_val & 0x0000FFFF;            // Load new count value
+        *(timer_ptr + 1) = 0x00000008;                              		// Stop timer
+        *(timer_ptr + 2) = timer_count_val & 0x0000FFFF;            		// Load new count value
 	    *(timer_ptr + 3) = (timer_count_val & 0xFFFF0000) >> 16;
-        *(timer_ptr + 1) = 0x00000007;                              // Resume timer
+        *(timer_ptr + 1) = 0x00000007;                              		// Resume timer
 
         SW_9_6_value = cur_SW_9_6_value;
         tens = (SW_9_6_value + 1) / 10;
@@ -67,8 +67,8 @@ void update_frequency(void) {
 
 irq_handler_t timer_handler(int irq, void *dev_id, struct pt_regs *regs) {
 
-    *gpio_ptr = (*gpio_ptr) ^ 1;    // Toggle bit
-	*(timer_ptr + 0) = 0b0;         // Clear timer0 TO bit
+    *gpio_ptr = (*gpio_ptr) ^ 1;    										// Toggle bit
+	*(timer_ptr + 0) = 0b0;         										// Clear timer0 TO bit
 
     update_frequency();
 
