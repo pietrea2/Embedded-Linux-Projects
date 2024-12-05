@@ -1,0 +1,41 @@
+To facilitate accurate marking, your submitted solution must use this template.
+
+To complete each part of the exercise, add your own code to the following files:
+part1: edgedetect.c
+part2: edgedetect.c
+part3: edgedetect.c
+
+NOTE: part 2 includes optional video output and is set up to use the built-in video driver.
+
+
+Please test your solution using the provided runall.sh script:
+part1: ./runall.sh 1   <input image file name (no path)> [-d] [-v]
+                       optional -d produces debug output for each stage
+                       optional -v draws the input and output images on a video-out display
+part 2: ./runall.sh 2  <input image file name (no path)>"
+part 3: ./runall.sh 3  <input image file name (no path)>"
+
+
+**IMPORTANT NOTES**
+1.  Before reconfiguring the FPGA (loading an .rbf file), you must remove all drivers (using lsmod and rmmod)
+2.  Parts 2 and 3 will not work with the vga emulator. You must use a vga monitor to display output images.
+3.  Part 1 will work with the vga emulator, but reconfiguring the FPGA (loading a different rbf file)
+    while the emulator is running will crash the emulator.  
+    When using the emulator, please remove all drivers and then manually configure the FPGA by typing:
+    /home/root/misc/program_fpga ./DE1_SoC_Computer.rbf
+
+
+To clean all directories, remove all drivers, and reload the default FPGA image: ./runall clean
+
+To submit your solution: ./runall.sh submit 
+The script generates a .tar.bz2 archive. Please upload this
+archive to quercus (only one team member needs to do this).
+
+
+The script may generate errors, for example:
+ERROR: Removing 'timer': No such file or directory
+These errors can be ignored.
+
+
+If you would like to clarify your interpretation of the exercise instructions 
+or provide any additional information to the grader, PLEASE TYPE IT HERE:
