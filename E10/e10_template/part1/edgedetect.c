@@ -125,7 +125,7 @@ void gaussian_blur(struct pixel **data) {
 
     /** please complete this function  **/
     int x, y, i, j, count;
-    unsigned int conv;
+    unsigned long int conv;
     unsigned int img_pixel;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
@@ -143,7 +143,7 @@ void gaussian_blur(struct pixel **data) {
             //printf("%d", count);
             conv /= 273;
             //conv = (conv > 255) ? 255 : conv;
-            convolution[y][x].r = conv;          // Store conv to pixel .r value
+            convolution[y][x].r = (byte) conv;          // Store conv to pixel .r value
             convolution[y][x].b = convolution[y][x].r;
             convolution[y][x].g = convolution[y][x].r;
         }
@@ -242,9 +242,9 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
             }
             
 
-            if( image[y][x].r > 40 ){           // Only check pixels that are on "edges"
+            if( image[y][x].r > 50 ){           // Only check pixels that are on "edges"
                 
-                if( (theta >= -40 && theta <= 40) || (theta >= 140 && theta <= 220) || (theta >= -220 && theta <= -140) ){     // Theta is close to 0 or 180 degrees
+                if( (theta >= -40 && theta <= 40.0) || (theta >= 140.0 && theta <= 210.0) || (theta >= -210.0 && theta <= -140.0) ){     // Theta is close to 0 or 180 degrees
                     left = (x-1 < 0) ? 0 : image[y][x-1].r;
                     right = (x+1 >= width) ? 0 : image[y][x+1].r;
                     if( image[y][x].r <= left || image[y][x].r <= right ){
@@ -258,7 +258,7 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
                         temp_data[y][x].b = image[y][x].r;
                     }
                 }
-                else if( (theta >= 50 && theta <= 130) || (theta > -130 && theta < -50) ){     // Theta is close to 90 or -90 degrees
+                else if( (theta >=50.0 && theta <= 130.0) || (theta > -130.0 && theta < -50.0) ){     // Theta is close to 90 or -90 degrees
                     above = (y+1 >= height) ? 0 : image[y+1][x].r;
                     below = (y-1 < 0) ? 0 : image[y-1][x].r;
                     if( image[y][x].r <= above || image[y][x].r <= below ){
@@ -272,7 +272,7 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
                         temp_data[y][x].b = image[y][x].r;
                     }
                 }
-                else if( (theta > 40 && theta < 50) || (theta > -140 && theta < -130) ){     // Theta is close to 45 and -135 degrees
+                else if( (theta > 40.0 && theta < 50.0) || (theta > -140.0 && theta < -130.0) ){     // Theta is close to 45 and -135 degrees
                     above = (y+1 <= height && x+1 <= width) ? 0 : image[y+1][x+1].r;
                     below = (y-1 < 0 && x-1 < 0) ? 0 : image[y-1][x-1].r;
                     if( image[y][x].r <= above || image[y][x].r <= below ){
@@ -286,7 +286,7 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
                         temp_data[y][x].b = image[y][x].r;
                     }
                 }
-                else if( (theta > -50 && theta < -40) || (theta > 130 && theta < 140) ){     // Theta is close to -45 and 135 degrees
+                else if( (theta > -50.0 && theta < -40.0) || (theta > 130.0 && theta < 140.0) ){     // Theta is close to -45 and 135 degrees
                     above = (y+1 <= height && x-1 < 0) ? 0 : image[y+1][x-1].r;
                     below = (y-1 < 0 && x+1 >= width) ? 0 : image[y-1][x+1].r;
                     if( image[y][x].r <= above || image[y][x].r <= below ){
@@ -300,27 +300,20 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
                         temp_data[y][x].b = image[y][x].r;
                     }
                 }
+                else{
+                    temp_data[y][x].r = image[y][x].r;
+                    temp_data[y][x].b = image[y][x].r;
+                    temp_data[y][x].g = image[y][x].r;
+                }
                 
             }
             else{
-                temp_data[y][x].r = 0;
-                temp_data[y][x].b = 0;
-                temp_data[y][x].g = 0;
+                temp_data[y][x].r = image[y][x].r;
+                temp_data[y][x].b = image[y][x].r;
+                temp_data[y][x].g = image[y][x].r;
             }
-
-            
-
-            
-
-
-
         }
     }
-
-    
-
-
-    
 
     free(*data);
     *data = (struct pixel *) temp_data;
@@ -328,12 +321,33 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
 
 // Only keep pixels that are next to at least one strong pixel.
 void hysteresis_filter(struct pixel ** data) {
-    #define strong_pixel 32 // example value
+    #define strong_pixel 50 // example value
     
     struct pixel (*temp_data)[width] = malloc (sizeof(struct pixel [height][width])); 
     struct pixel (*image)[width] = (struct pixel (*)[width]) *data;
 
     /**  please complete this function  **/
+    int x, y, adjacent_count, i, j, img_pixel;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+
+            // Check adjacent pixels
+            adjacent_count = 0;
+            for(i = -1; i <= 1; i++){
+                for(j = -1; j <= 1; j++){
+                    img_pixel = ( (y+i < 0 || y+i >= height) || (x+j < 0 || x+j >= width) ) ? 0 : image[y+i][x+j].r;
+                    if( img_pixel > strong_pixel ) adjacent_count++;
+                }
+            }
+
+            if( image[y][x].r > strong_pixel && adjacent_count ) temp_data[y][x].r = image[y][x].r;
+            else temp_data[y][x].r = 0;
+
+            temp_data[y][x].g = temp_data[y][x].r;
+            temp_data[y][x].b = temp_data[y][x].r;
+
+        }
+    }
     
 
 
@@ -462,8 +476,8 @@ int main(int argc, char *argv[]) {
 
     /// Hysteresis
     /** please uncomment after you implement hysteresis_filter **/
-    //hysteresis_filter (&image);
-    //if (debug) write_bmp ("stage4_hysteresis.bmp", header, image);
+    hysteresis_filter (&image);
+    if (debug) write_bmp ("stage4_hysteresis.bmp", header, image);
 
     end = clock();
 
