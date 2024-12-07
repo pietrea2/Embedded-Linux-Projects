@@ -124,6 +124,30 @@ void gaussian_blur(struct pixel **data) {
     struct pixel (*image)[width] = (struct pixel (*)[width]) *data;
 
     /** please complete this function  **/
+    int x, y, i, j, count;
+    unsigned int conv;
+    unsigned int img_pixel;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+
+            conv = 0;
+            //count = 0;
+            // Now loop through kernel (filter)
+            for(i = 0; i < 5; i++){
+                for(j = 0; j < 5; j++){
+                    img_pixel = ( (y+i-2 < 0 || y+i-2 >= height) || (x+j-2 < 0 || x+j-2 >= width) ) ? 0 : image[y+i-2][x+j-2].r;    // Missing pixels set to 0
+                    conv += filter[i][j] * img_pixel;
+                    //count++;
+                }
+            }
+            //printf("%d", count);
+            conv /= 273;
+            //conv = (conv > 255) ? 255 : conv;
+            convolution[y][x].r = conv;          // Store conv to pixel .r value
+            convolution[y][x].b = convolution[y][x].r;
+            convolution[y][x].g = convolution[y][x].r;
+        }
+    }
 
     free (*data);                           // the input data is no longer needed
     *data = (struct pixel *) convolution;   // return the convolution of the image
@@ -158,8 +182,34 @@ void sobel_filter(struct pixel **data, signed int **conv_x, signed int **conv_y)
     struct pixel (*image)[width] = (struct pixel (*)[width]) *data;
 
     /**  please complete this function  **/
+    int x, y, i, j, img_pixel, intensity;
+    signed int conv_sx, conv_sy;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
 
+            conv_sx = 0;
+            conv_sy = 0;
+            // Now loop through each kernel (filter)
+            for(i = -1; i <= 1; i++){
+                for(j = -1; j <= 1; j++){
+                    img_pixel = ( (y+i < 0 || y+i >= height) || (x+j < 0 || x+j >= width) ) ? 0 : image[y+i][x+j].r;    // Missing pixels set to 0
+                    conv_sx += sobel_x[i+1][j+1] * img_pixel;
+                    conv_sy += sobel_y[i+1][j+1] * img_pixel;
+                }
+            }
+            
+            G_x[y][x] = conv_sx;
+            G_y[y][x] = conv_sy;
 
+            // Calc magnitude of the intensity gradient
+            intensity = ( abs(conv_sx) + abs(conv_sy) ) / 2;
+            //intensity = (intensity > 255) ? 255 : intensity;
+
+            gradient[y][x].r = (byte) intensity;
+            gradient[y][x].b = gradient[y][x].r;
+            gradient[y][x].g = gradient[y][x].r;
+        }
+    }
 
 
     free (*data);   // the previous image data is no longer needed
@@ -177,9 +227,100 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
     signed int (*G_y)[width] = (signed int (*)[width]) sobel_y; // enable G_y[][]
 
     /**  please complete this function  **/
+    int x, y;
+    double theta;
+    int left, right, above, below;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+
+            // Calc theta angle of gradient
+            if(G_x[y][x] == 0) theta = 90.0;
+            if(G_y[y][x] == 0) theta = 0;
+            else{
+                theta = atan2( (double) G_y[y][x] , (double) G_x[y][x] );
+                theta = (theta * 180.0) / PI;
+            }
+            
+
+            if( image[y][x].r > 40 ){           // Only check pixels that are on "edges"
+                
+                if( (theta >= -40 && theta <= 40) || (theta >= 140 && theta <= 220) || (theta >= -220 && theta <= -140) ){     // Theta is close to 0 or 180 degrees
+                    left = (x-1 < 0) ? 0 : image[y][x-1].r;
+                    right = (x+1 >= width) ? 0 : image[y][x+1].r;
+                    if( image[y][x].r <= left || image[y][x].r <= right ){
+                        temp_data[y][x].r = 0;
+                        temp_data[y][x].g = 0;
+                        temp_data[y][x].b = 0;
+                    }
+                    else{
+                        temp_data[y][x].r = image[y][x].r;
+                        temp_data[y][x].g = image[y][x].r;
+                        temp_data[y][x].b = image[y][x].r;
+                    }
+                }
+                else if( (theta >= 50 && theta <= 130) || (theta > -130 && theta < -50) ){     // Theta is close to 90 or -90 degrees
+                    above = (y+1 >= height) ? 0 : image[y+1][x].r;
+                    below = (y-1 < 0) ? 0 : image[y-1][x].r;
+                    if( image[y][x].r <= above || image[y][x].r <= below ){
+                        temp_data[y][x].r = 0;
+                        temp_data[y][x].g = 0;
+                        temp_data[y][x].b = 0;
+                    }
+                    else{
+                        temp_data[y][x].r = image[y][x].r;
+                        temp_data[y][x].g = image[y][x].r;
+                        temp_data[y][x].b = image[y][x].r;
+                    }
+                }
+                else if( (theta > 40 && theta < 50) || (theta > -140 && theta < -130) ){     // Theta is close to 45 and -135 degrees
+                    above = (y+1 <= height && x+1 <= width) ? 0 : image[y+1][x+1].r;
+                    below = (y-1 < 0 && x-1 < 0) ? 0 : image[y-1][x-1].r;
+                    if( image[y][x].r <= above || image[y][x].r <= below ){
+                        temp_data[y][x].r = 0;
+                        temp_data[y][x].g = 0;
+                        temp_data[y][x].b = 0;
+                    }
+                    else{
+                        temp_data[y][x].r = image[y][x].r;
+                        temp_data[y][x].g = image[y][x].r;
+                        temp_data[y][x].b = image[y][x].r;
+                    }
+                }
+                else if( (theta > -50 && theta < -40) || (theta > 130 && theta < 140) ){     // Theta is close to -45 and 135 degrees
+                    above = (y+1 <= height && x-1 < 0) ? 0 : image[y+1][x-1].r;
+                    below = (y-1 < 0 && x+1 >= width) ? 0 : image[y-1][x+1].r;
+                    if( image[y][x].r <= above || image[y][x].r <= below ){
+                        temp_data[y][x].r = 0;
+                        temp_data[y][x].g = 0;
+                        temp_data[y][x].b = 0;
+                    }
+                    else{
+                        temp_data[y][x].r = image[y][x].r;
+                        temp_data[y][x].g = image[y][x].r;
+                        temp_data[y][x].b = image[y][x].r;
+                    }
+                }
+                
+            }
+            else{
+                temp_data[y][x].r = 0;
+                temp_data[y][x].b = 0;
+                temp_data[y][x].g = 0;
+            }
+
+            
+
+            
 
 
 
+        }
+    }
+
+    
+
+
+    
 
     free(*data);
     *data = (struct pixel *) temp_data;
@@ -193,7 +334,7 @@ void hysteresis_filter(struct pixel ** data) {
     struct pixel (*image)[width] = (struct pixel (*)[width]) *data;
 
     /**  please complete this function  **/
-
+    
 
 
 
@@ -303,21 +444,21 @@ int main(int argc, char *argv[]) {
     if (debug) write_bmp ("stage0_grayscale.bmp", header, image);
 
     /** please uncomment after you implement gaussian_blur **/
-    // gaussian_blur (&image);
-    //if (debug) write_bmp ("stage1_gaussian.bmp", header, image);
+    gaussian_blur (&image);
+    if (debug) write_bmp ("stage1_gaussian.bmp", header, image);
 
 
     /** please uncomment after you implement sobel_filter **/
-    // sobel_filter (&image, &G_x, &G_y);
-    /* if (debug) {
+    sobel_filter (&image, &G_x, &G_y);
+    if (debug) {
         write_signed_bmp ("stage2_gradient_x.bmp", header, G_x);
         write_signed_bmp ("stage2_gradient_y.bmp", header, G_y);
         write_bmp ("stage2_gradient.bmp", header, image);
-    }*/
+    }
 
     /** please uncomment after you implement non_max_suppress **/
-    //non_max_suppress (&image, G_x, G_y);
-    //if (debug) write_bmp ("stage3_nonmax_suppression.bmp", header, image);
+    non_max_suppress (&image, G_x, G_y);
+    if (debug) write_bmp ("stage3_nonmax_suppression.bmp", header, image);
 
     /// Hysteresis
     /** please uncomment after you implement hysteresis_filter **/
