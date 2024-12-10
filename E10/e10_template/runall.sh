@@ -65,7 +65,7 @@ case "$1" in
 
 1)  echo "-- Setting up Part 1 --"
     ## configure FPGA manually if using vga emulator
-    ##/home/root/misc/program_fpga ./DE1_SoC_Computer.rbf
+    /home/root/misc/program_fpga ./DE1_SoC_Computer.rbf
     rmmod -f video
     insmod /home/root/Linux_Libraries/drivers/video.ko
     cd part1 && make clean && make && cd ..

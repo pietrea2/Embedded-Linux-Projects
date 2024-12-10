@@ -49,18 +49,20 @@ int read_bmp(char *filename, unsigned char **header, struct pixel **data) {
 // bottom rows, then the second row with the second-from-bottom, and so on, until finally 
 // swapping the middle two rows.
 void flip (struct pixel *data, int width, int height){
-     int i, j;
-     struct pixel tmp;
-     // declare image as a 2-D array so that we can use the syntax image[row][column]
-     struct pixel (*image)[width] = (struct pixel (*)[width]) data;
+    int i, j;
+    struct pixel tmp;
+    // declare image as a 2-D array so that we can use the syntax image[row][column]
+    struct pixel (*image)[width] = (struct pixel (*)[width]) data;
 
-     for (i = 0; i < height / 2; ++i)
-         for (j = 0; j < width; ++j) {
-
-             /**  please complete this function  **/
-
-
-         }
+    for (i = 0; i < height / 2; ++i) {
+        for (j = 0; j < width; ++j) {
+        
+            /**  please complete this function  **/
+            tmp = image[i][j];
+            image[i][j] = image[height - i - 1][j];
+            image[height - i][j] = tmp;
+        }
+    }
 }
 
 // The video IP cores used for edge detection require the RGB 24 bits of each pixel to be
@@ -69,6 +71,15 @@ void flip (struct pixel *data, int width, int height){
 void memcpy_consecutive_to_padded(struct pixel *from, volatile unsigned int *to, int pixels){
 
     /**  please implement this function  **/
+    struct pixel (*img)[width] = (struct pixel (*)[width]) from;
+    unsigned int (*padded_img)[width] = (unsigned int (*)[width]) to;
+
+    int x, y;
+    for (y = 0; y < height; y++) {
+        for (x = 0; x < width; x++) {
+            padded_img[y][x] = (img[y][x].r << 16) + (img[y][x].g << 8) + img[y][x].b;
+        }
+    }
 
 }
 

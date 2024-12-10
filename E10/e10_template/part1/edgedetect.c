@@ -124,25 +124,21 @@ void gaussian_blur(struct pixel **data) {
     struct pixel (*image)[width] = (struct pixel (*)[width]) *data;
 
     /** please complete this function  **/
-    int x, y, i, j, count;
+    int x, y, i, j;
     unsigned long int conv;
     unsigned int img_pixel;
     for (y = 0; y < height; y++) {
         for (x = 0; x < width; x++) {
 
             conv = 0;
-            //count = 0;
             // Now loop through kernel (filter)
             for(i = 0; i < 5; i++){
                 for(j = 0; j < 5; j++){
                     img_pixel = ( (y+i-2 < 0 || y+i-2 >= height) || (x+j-2 < 0 || x+j-2 >= width) ) ? 0 : image[y+i-2][x+j-2].r;    // Missing pixels set to 0
                     conv += filter[i][j] * img_pixel;
-                    //count++;
                 }
             }
-            //printf("%d", count);
-            conv /= 273;
-            //conv = (conv > 255) ? 255 : conv;
+            conv = (float)conv / 273.0;
             convolution[y][x].r = (byte) conv;          // Store conv to pixel .r value
             convolution[y][x].b = convolution[y][x].r;
             convolution[y][x].g = convolution[y][x].r;
@@ -202,8 +198,7 @@ void sobel_filter(struct pixel **data, signed int **conv_x, signed int **conv_y)
             G_y[y][x] = conv_sy;
 
             // Calc magnitude of the intensity gradient
-            intensity = ( abs(conv_sx) + abs(conv_sy) ) / 2;
-            //intensity = (intensity > 255) ? 255 : intensity;
+            intensity = ( abs(conv_sx) + abs(conv_sy) ) / 2.0;
 
             gradient[y][x].r = (byte) intensity;
             gradient[y][x].b = gradient[y][x].r;
@@ -241,8 +236,9 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
                 theta = (theta * 180.0) / PI;
             }
             
+            //printf("%lf\n", theta);
 
-            if( image[y][x].r > 50 ){           // Only check pixels that are on "edges"
+            if( image[y][x].r > 0 ){           // Only check pixels that are on "edges"
                 
                 if( (theta >= -40 && theta <= 40.0) || (theta >= 140.0 && theta <= 210.0) || (theta >= -210.0 && theta <= -140.0) ){     // Theta is close to 0 or 180 degrees
                     left = (x-1 < 0) ? 0 : image[y][x-1].r;
@@ -321,7 +317,7 @@ void non_max_suppress(struct pixel **data, signed int *sobel_x, signed int *sobe
 
 // Only keep pixels that are next to at least one strong pixel.
 void hysteresis_filter(struct pixel ** data) {
-    #define strong_pixel 50 // example value
+    #define strong_pixel 35 // example value
     
     struct pixel (*temp_data)[width] = malloc (sizeof(struct pixel [height][width])); 
     struct pixel (*image)[width] = (struct pixel (*)[width]) *data;
