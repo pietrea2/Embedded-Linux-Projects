@@ -47,3 +47,29 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
 - Wrote a C user-space program to integrate all drivers
 - When a KEY was pressed, the current state of the SW switches was displayed on the LEDR lights, and the accumulated total was shown on the HEX displays
 
+## Project 4
+### Part 1: Stopwatch Driver
+- Implemented a basic stopwatch driver supporting open, release, and read operations
+- Displays stopwatch time in terminal via cat /dev/stopwatch
+
+### Part 2: Enhanced Stopwatch Driver via Write Commands
+- Extended the driver to support write operations, enabling commands:
+    - run / stop — start or pause stopwatch
+    - MM:SS:DD — set stopwatch time
+    - disp / nodisp — enable/disable seven-segment display output
+
+### Part 3: User-Level Stopwatch Control Program
+- Developed a user-level C program (part3.c) to interact with the stopwatch driver
+- Program runs in an endless loop, responding to hardware inputs:
+    - KEY0: toggles between run and pause
+    - KEY1–KEY3: set stopwatch time parts (MM, SS, DD) using SW switches
+    - SW switches: specify the time values
+- Read input from KEY and SW device drivers, and optionally displayed SW values on LEDs
+
+### Part 4: Interactive Math Game
+- A user-level C program (part4.c) that turns the stopwatch into a timed math quiz game
+- Presents a series of math questions to answer before time runs out
+- Tracks and reports statistics at the end (questions answered, average response time)
+- Optionally displays stopwatch on seven-segment display during the game
+
+
