@@ -93,3 +93,34 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
     - Adjust animation speed up/down
     - Increase/decrease the number of animated objects
     - Toggle drawing of connecting lines on/off
+
+## Project 6: Graphics & Animation Using Linux Character Drivers
+### Part 1: VGA Driver
+- Implemented a Linux character device driver (/dev/video) to interface with the VGA display to:
+    - Clear the screen
+    - Set individual pixel colours
+
+### Part 2: Line Drawing Command
+- Extended the driver with a line drawing command (Bresenham’s algorithm)
+- Reduced overhead by moving line computation into the driver rather than issuing many pixel commands
+
+### Part 3: Animation with Synchronization
+- Added support for VGA vertical synchronization (sync command) to avoid tearing during animations by performing pixel buffer swapping
+- Developed a user-space program to animate a horizontal line bouncing between the top and bottom of the screen
+
+### Part 4: Animated Boxes
+- Enhanced the driver to support drawing boxes of any specified length
+- Wrote a user-level program that animates eight bouncing rectangles, connected by lines to form a moving chain
+- Implemented double-buffering for smooth animations without flickering by storing pixel buffers in FPGA on-chip memory and SDRAM
+
+### Part 5: Controlling Animated Boxes
+- Added user interaction to control the animation using pushbuttons and switches in real time to:
+    - Adjust animation speed
+    - Increase/decrease the number of rectangles
+    - Toggle lines between rectangles on/off
+
+### Part 6: VGA Text Display
+- Extended the driver to work with the VGA character buffer to display a frame counter in the corner of the screen
+- Added commands to:
+    - Erase text from the screen
+    - Display ASCII text at specified screen coordinates
