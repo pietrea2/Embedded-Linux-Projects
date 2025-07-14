@@ -15,50 +15,50 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
 
 ![DE1-SoC Block Diagram](/diagrams/de1_soc_block_diagram.png)
 
-## Project 2: Embedded Linux Program
-### Part 1: Scrolling Message
+## [Project 2: Embedded Linux Programs](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_02)
+#### Part 1: Scrolling Message
 - Linux user-level C program that displays a scrolling message on the 7-segment display and terminal
 - Pushbutton keys are used to pause/resume scrolling
 - Communicate with SoC hardware through memory-mapped IO
 
-### Part 2: Real-time Clock
+#### Part 2: Real-time Clock
 - A kernel module that displays a real-time clock in the format MM:SS:DD on the 7-segment display and terminal
 - Uses FPGA hardware timer register interface to generate periodic interrupts for clock
 
-### Part 3: Stopwatch
+#### Part 3: Stopwatch
 - A kernel module that acts as a countdown stopwatch displayed as MM:SS:DD
 - Can set start time using switches and pushbuttons
 - Supports starting, pausing, and resetting the stopwatch via pushbutton interrupts
 
-## Project 3:  Character Device Drivers
-### Part 1: Basic Character Device Driver
+## [Project 3:  Character Device Drivers](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_03)
+#### Part 1: Basic Character Device Driver
 - Implemented a simple character device driver (chardev) as a Linux kernel module
 - Supports read and write operations via /dev/chardev, allowing user programs to modify and retrieve a message
 
-### Part 2: Input Drivers for Switches and Pushbuttons
+#### Part 2: Input Drivers for Switches and Pushbuttons
 - Created kernel modules providing /dev/KEY and /dev/SW interfaces
 - Drivers read the states of DE1-SoC pushbuttons (KEY) and slider switches (SW) and returned their values to the user as ASCII-encoded data
 
-### Part 3: Output Drivers for LEDs and 7-Segment Displays
+#### Part 3: Output Drivers for LEDs and 7-Segment Displays
 - Developed drivers for controlling LEDs (/dev/LEDR) and 7-segment displays (/dev/HEX)
 - Drivers accepted ASCII-encoded input from the user to display patterns and values on the hardware
 
-### Part 4: User-Level Control Program
+#### Part 4: User-Level Control Program
 - Wrote a C user-space program to integrate all drivers
 - When a KEY was pressed, the current state of the SW switches was displayed on the LEDR lights, and the accumulated total was shown on the HEX displays
 
-## Project 4: Using Character Device Drivers
-### Part 1: Stopwatch Driver
+## [Project 4: Using Character Device Drivers](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_04)
+#### Part 1: Stopwatch Driver
 - Implemented a basic stopwatch driver supporting open, release, and read operations
 - Displays stopwatch time in terminal via cat /dev/stopwatch
 
-### Part 2: Enhanced Stopwatch Driver via Write Commands
+#### Part 2: Enhanced Stopwatch Driver via Write Commands
 - Extended the driver to support write operations, enabling commands:
     - run / stop — start or pause stopwatch
     - MM:SS:DD — set stopwatch time
     - disp / nodisp — enable/disable seven-segment display output
 
-### Part 3: User-Level Stopwatch Control Program
+#### Part 3: User-Level Stopwatch Control Program
 - Developed a user-level C program to interact with the stopwatch driver
 - Program runs in an endless loop, responding to hardware inputs:
     - KEY0: toggles between run and pause
@@ -66,61 +66,82 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
     - SW switches: specify the time values
 - Read input from KEY and SW device drivers, and optionally displayed SW values on LEDs
 
-### Part 4: Interactive Math Game
+#### Part 4: Interactive Math Game
 - A user-level C program that turns the stopwatch into a timed math quiz game
 - Presents a series of math questions to answer before time runs out
 - Tracks and reports statistics at the end (questions answered, average response time)
 - Optionally displays stopwatch on seven-segment display during the game
 
-## Project 5: ASCII Graphics for Animation
-### Part 1: Static ASCII Graphics
+## [Project 5: ASCII Graphics for Animation](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_05)
+#### Part 1: Static ASCII Graphics
 - Used VT100 commands to send ASCII escape sequences to the Linux terminal to clear the screen, and draw colored characters at specific positions
 
-### Part 2: Line Drawing with Bresenham’s Algorithm
+#### Part 2: Line Drawing with Bresenham’s Algorithm
 - Implemented Bresenham’s algorithm in C to draw straight lines between two points on the terminal
 
-### Part 3: Moving Line Animation
+#### Part 3: Moving Line Animation
 - Extended the program to create a moving horizontal line that bounces vertically
 - Implemented basic collision detection with the top and bottom edges of the screen
 
-### Part 4: Random Line Animation
+#### Part 4: Random Line Animation
 - Extended the animation to include multiple objects moving and bouncing off screen edges
 - Connected moving objects with lines to form a dynamic “chain"
 - Used random initial positions and directions for variety
 
-### Part 5: Interactive Animation Enhancements
+#### Part 5: Interactive Animation Enhancements
 - Enhanced the Part 4 animation to respond to hardware inputs (KEYs and SW switches) in live-time to:
     - Adjust animation speed up/down
     - Increase/decrease the number of animated objects
     - Toggle drawing of connecting lines on/off
 
-## Project 6: Graphics & Animation Using Linux Character Drivers
-### Part 1: VGA Driver
+## [Project 6: Graphics & Animation Using Linux Character Drivers](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_06)
+#### Part 1: VGA Driver
 - Implemented a Linux character device driver (/dev/video) to interface with the VGA display to:
     - Clear the screen
     - Set individual pixel colours
 
-### Part 2: Line Drawing Command
+#### Part 2: Line Drawing Command
 - Extended the driver with a line drawing command (Bresenham’s algorithm)
 - Reduced overhead by moving line computation into the driver rather than issuing many pixel commands
 
-### Part 3: Animation with Synchronization
+#### Part 3: Animation with Synchronization
 - Added support for VGA vertical synchronization (sync command) to avoid tearing during animations by performing pixel buffer swapping
 - Developed a user-space program to animate a horizontal line bouncing between the top and bottom of the screen
 
-### Part 4: Animated Boxes
+#### Part 4: Animated Boxes
 - Enhanced the driver to support drawing boxes of any specified length
 - Wrote a user-level program that animates eight bouncing rectangles, connected by lines to form a moving chain
 - Implemented double-buffering for smooth animations without flickering by storing pixel buffers in FPGA on-chip memory and SDRAM
 
-### Part 5: Controlling Animated Boxes
+#### Part 5: Controlling Animated Boxes
 - Added user interaction to control the animation using pushbuttons and switches in real time to:
     - Adjust animation speed
     - Increase/decrease the number of rectangles
     - Toggle lines between rectangles on/off
 
-### Part 6: VGA Text Display
+#### Part 6: VGA Text Display
 - Extended the driver to work with the VGA character buffer to display a frame counter in the corner of the screen
 - Added commands to:
     - Erase text from the screen
     - Display ASCII text at specified screen coordinates
+
+## [Project 7: ADXL345 Accelerometer](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_07)
+#### Part 1: Configuring and Reading the ADXL345
+- A user level program that configures the accelerometer, and prints real-time X, Y, Z acceleration values while tilting the board using virtual addresses to access the chip via memory-mapped I/O
+
+#### Part 2: ADXL345 Character Device Driver
+- Developed a character device driver for the ADXL345 to add support to the Linux kernel for accessing the device
+- Created /dev/accel device file to allow user-space access to accelerometer data
+
+#### Part 3: Device Driver Write Operations & Graphical Demo
+- Extended the character device driver to handle write commands such as:
+    - init: re-initializes the device
+    - calibrate: runs calibration routine
+    - format F G: sets resolution & range
+- Implemented a user-space program with a graphical demo that displays a “bubble” that moves based on board tilt
+- Supported smoothing of acceleration readings using a running average to reduce jitter
+
+#### Part 4: Tap and Double-Tap Detection
+- Enhanced the driver to detect tap and double-tap gestures using the ADXL345’s interrupt capabilities
+
+
