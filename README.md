@@ -144,4 +144,27 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
 #### Part 4: Tap and Double-Tap Detection
 - Enhanced the driver to detect tap and double-tap gestures using the ADXL345’s interrupt capabilities
 
+## [Project 8: Audio and Multithreaded Applications on DE1-SoC](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_08)
+#### Part 1: Single Tone Playback
+- Wrote a Linux user-level C program that generates and plays the middle C chromatic scale through the audio-out port of the
+ DE1-SoC Computer system
+- Used memory-mapped I/O to write samples to the DE1-SoC audio CODEC via the audio port registers
 
+#### Part 2: Chord Playback
+- Extended the program to play multiple tones (chords) simultaneously, based on a 13-character command-line input
+- Summed sinusoids safely by scaling volumes to avoid overflow when mixing tones
+
+#### Part 3: Digital Piano with Multithreading
+- Created a multithreaded digital piano that responds to USB keyboard input in real-time
+- Used Pthreads to separate audio generation and input handling, improving responsiveness and timing accuracy
+- Implemented mutexes to synchronize access to shared tone-volume data
+
+#### Part 4: Piano Waveform Visualization
+- Added a third thread to display the currently played sound waveforms on the VGA screen using character device drivers to communicate with the VGA controller
+
+#### Part 5: Recording and Playback
+- Implemented a feature to record and play back sequences of notes, tracking piano key press/release timings
+- Used the stopwatch and pushbuttons/LEDs to control and indicate recording/playback status
+
+#### Part 6: Character Device Driver Version
+- Modified the program to use the Linux character device driver interface (/dev/IntelFPGAUP/audio) instead of memory-mapped I/O for audio output
