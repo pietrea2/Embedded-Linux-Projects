@@ -151,13 +151,11 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
 - Used memory-mapped I/O to write samples to the DE1-SoC audio CODEC via the audio port registers
 
 #### Part 2: Chord Playback
-- Extended the program to play multiple tones (chords) simultaneously, based on a 13-character command-line input
-- Summed sinusoids safely by scaling volumes to avoid overflow when mixing tones
+- Extended the program to play multiple tones (chords) simultaneously (without volume overflow) based on a 13-character command-line input
 
 #### Part 3: Digital Piano with Multithreading
 - Created a multithreaded digital piano that responds to USB keyboard input in real-time
 - Used Pthreads to separate audio generation and input handling, improving responsiveness and timing accuracy
-- Implemented mutexes to synchronize access to shared tone-volume data
 
 #### Part 4: Piano Waveform Visualization
 - Added a third thread to display the currently played sound waveforms on the VGA screen using character device drivers to communicate with the VGA controller
@@ -168,3 +166,20 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
 
 #### Part 6: Character Device Driver Version
 - Modified the program to use the Linux character device driver interface (/dev/IntelFPGAUP/audio) instead of memory-mapped I/O for audio output
+
+## [Project 9: Simple Oscilloscope Using DE1-SoC](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_09)
+#### Part 1: Reading ADC Pin Voltage
+- C program that reads from the DE1-SoC ADC (AD7928) controller port registers and prints the voltage level of the ADC connector pin to the terminal
+
+#### Part 2: Digital Signal Generator
+- Developed a Linux kernel module that generates a configurable square wave on pin D0 of the JP1 connector of the DE1-SoC
+- Used FPGA Timer0 to generate periodic interrupts and toggle the output pin at a frequency set by board switches (10–160 Hz)
+- Displayed the selected frequency and switch settings on LEDs and seven-segment displays
+
+#### Part 3: Oscilloscope Application
+- Wrote a C program that implements an oscilloscope that samples ADC channel 0 periodically and displays the waveform on the VGA screen
+- Triggered sweeps on rising or falling edges of the input signal based on switch SW0
+
+#### Part 4: Enhanced Oscilloscope With Sweep Time Control
+- Enhanced the oscilloscope to allow the user to adjust the sweep duration using the board’s KEY buttons (increase/decrease by 100 ms increments)
+
