@@ -183,3 +183,22 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
 #### Part 4: Enhanced Oscilloscope With Sweep Time Control
 - Enhanced the oscilloscope to allow the user to adjust the sweep duration using the board’s KEY buttons (increase/decrease by 100 ms increments)
 
+## Project 10: [Image Processing: Canny Edge Detection](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_10)
+#### Part 1: Software Implementation
+- Developed an implementation of the Canny Edge Detection Algorithm in C which includes: grayscale conversion, Sobel operator, non-max suppresison and hysteresis
+- tested edge detection on BMP images and visualized results using VGA display
+
+#### Part 2: Hardware Setup and Image Display
+- Reconfigured the FPGA with a hardware edge-detection system
+- Wrote C function to properly pack 24-bit pixels into 32-bit SDRAM memory
+- Implemented flip() that flips the image vertically before writing it into the SDRAM buffer so it appears correctly on the video output
+
+#### Part 3: Hardware-Accelerated Edge Detection
+- Extended the Part 2 code to enable and control the FPGA’s hardware edge-detection pipeline
+- Used DMA controllers and their registers to:
+    - Stream image data to and from the FPGA-based edge-detection circuit
+    - Swap buffer addresses and wait for completion using status polling
+    - Display the edge-detected output on the VGA monitor
+    - Saved the hardware-processed edge-detected image back to a BMP file
+- Compared the hardware-accelerated runtime against the CPU-only implementation to evaluate performance improvements
+
