@@ -183,7 +183,7 @@ A repository for Embedded Linux course projects for the DE1-SoC Development Boar
 #### Part 4: Enhanced Oscilloscope With Sweep Time Control
 - Enhanced the oscilloscope to allow the user to adjust the sweep duration using the board’s KEY buttons (increase/decrease by 100 ms increments)
 
-## Project 10: [Image Processing: Canny Edge Detection](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_10)
+## [Project 10: Image Processing: Canny Edge Detection](https://github.com/pietrea2/Embedded-Linux-Projects/tree/main/Project_10)
 #### Part 1: Software Implementation
 - Developed an implementation of the Canny Edge Detection Algorithm in C which includes: grayscale conversion, Sobel operator, non-max suppresison and hysteresis
 - tested edge detection on BMP images and visualized results using VGA display
